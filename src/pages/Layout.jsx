@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
-import CartDrawer from './components/cart/CartDrawer';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import CartDrawer from '@/components/cart/CartDrawer';
 
 export default function Layout({ children }) {
   const [cartItems, setCartItems] = useState([]);
