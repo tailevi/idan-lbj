@@ -55,7 +55,7 @@ export default function AnimatedLogo({ size = 'large', className = '' }) {
       whileHover={isLarge ? { scale: 1.02 } : undefined}
     >
       <div className={`flex ${isLarge ? 'gap-4 md:gap-8' : 'gap-1'}`}>
-        {['L', 'B', 'J'].map((letter, i) => (
+        {['J', 'B', 'L'].map((letter, i) => (
           <motion.span
             key={letter}
             custom={i}

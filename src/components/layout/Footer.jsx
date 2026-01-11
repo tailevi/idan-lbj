@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, useAnimation } from 'framer-motion';
 import { Instagram, Mail, Phone, MapPin, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -7,6 +7,26 @@ import AnimatedLogo from '../effects/AnimatedLogo';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [isPaperShieldHovered, setIsPaperShieldHovered] = useState(false);
+  const shieldControls = useAnimation();
+
+  const handlePaperShieldHover = async () => {
+    setIsPaperShieldHovered(true);
+    // Spin 360 quickly, then pulse like a heartbeat
+    await shieldControls.start({
+      rotate: 360,
+      transition: { duration: 0.4, ease: "easeInOut" }
+    });
+    await shieldControls.start({
+      scale: [1, 1.3, 1],
+      transition: { duration: 0.3, ease: "easeOut" }
+    });
+    shieldControls.set({ rotate: 0 });
+  };
+
+  const handlePaperShieldLeave = () => {
+    setIsPaperShieldHovered(false);
+  };
 
   const socialLinks = [
     { icon: Instagram, href: '#', label: 'Instagram' },
@@ -108,6 +128,30 @@ export default function Footer() {
             <p className="text-[#5a5a5a] text-xs">
               © {currentYear} LBJ Bahar Fine Art Photography. כל הזכויות שמורות.
             </p>
+
+            {/* Paper Shield Branding */}
+            <a
+              href="https://paper-shield.co.il/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 cursor-pointer"
+              onMouseEnter={handlePaperShieldHover}
+              onMouseLeave={handlePaperShieldLeave}
+            >
+              <span
+                className="text-xs transition-colors duration-300"
+                style={{ color: isPaperShieldHovered ? '#d4af37' : '#5a5a5a' }}
+              >
+                Powered By Paper Shield
+              </span>
+              <motion.img
+                src="/paper-shield-logo.png"
+                alt="Paper Shield Logo"
+                className="w-16 h-16 object-contain"
+                animate={shieldControls}
+              />
+            </a>
+
             <p className="text-[#5a5a5a] text-xs flex items-center gap-1">
               נוצר עם
               <motion.span
