@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
+import ClickRipple from '@/components/effects/ClickRipple';
 
 export default function Layout({ children }) {
   const [cartItems, setCartItems] = useState([]);
@@ -62,6 +63,7 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#000000]">
+      <ClickRipple />
       <style>{`
         :root {
           --color-primary: #d4af37;
@@ -75,7 +77,7 @@ export default function Layout({ children }) {
           --color-text-subtle: #8b7355;
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Rubik:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Rubik:wght@300;400;500;600&family=Varela+Round&display=swap');
 
         body {
           font-family: 'Rubik', sans-serif;
@@ -84,7 +86,7 @@ export default function Layout({ children }) {
         }
 
         h1, h2, h3, h4, h5, h6 {
-          font-family: 'Frank Ruhl Libre', serif;
+          font-family: 'Varela Round', 'Frank Ruhl Libre', serif;
         }
 
         /* Custom Scrollbar */

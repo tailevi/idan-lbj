@@ -1,12 +1,116 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import ProductCard from '../components/gallery/ProductCard';
 import ProductModal from '../components/gallery/ProductModal';
 import GalleryFilters from '../components/gallery/GalleryFilters';
 import ParticleField from '../components/effects/ParticleField';
+
+// Mock product data
+const mockProducts = [
+  {
+    id: '1',
+    title: 'אריה אפריקאי',
+    image_url: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=800&q=80',
+    price: 890,
+    category: 'wildlife',
+    description: 'צילום מרהיב של אריה אפריקאי בשקיעה',
+    sizes: [
+      { dimensions: '30×40 ס"מ', price: 890 },
+      { dimensions: '50×70 ס"מ', price: 1335 },
+      { dimensions: '70×100 ס"מ', price: 1780 },
+      { dimensions: '100×150 ס"מ', price: 2670 }
+    ]
+  },
+  {
+    id: '2',
+    title: 'פיל בסוואנה',
+    image_url: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800&q=80',
+    price: 950,
+    category: 'wildlife',
+    description: 'פיל מלכותי צועד בשטחי הסוואנה האפריקאית'
+  },
+  {
+    id: '3',
+    title: 'נמר בג׳ונגל',
+    image_url: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&q=80',
+    price: 1100,
+    category: 'wildlife',
+    description: 'נמר מסתורי בין עלי הג׳ונגל'
+  },
+  {
+    id: '4',
+    title: 'זברות במדבר',
+    image_url: 'https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=800&q=80',
+    price: 780,
+    category: 'wildlife',
+    description: 'עדר זברות בשחר האפריקאי'
+  },
+  {
+    id: '5',
+    title: 'הרי האלפים',
+    image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+    price: 1200,
+    category: 'landscapes',
+    description: 'נוף מרהיב של הרי האלפים בשלג'
+  },
+  {
+    id: '6',
+    title: 'שקיעה באוקיינוס',
+    image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+    price: 850,
+    category: 'landscapes',
+    description: 'שקיעה זהובה מעל האוקיינוס השקט'
+  },
+  {
+    id: '7',
+    title: 'יער הגשם',
+    image_url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80',
+    price: 920,
+    category: 'landscapes',
+    description: 'יער גשם טרופי בכל הודו'
+  },
+  {
+    id: '8',
+    title: 'מדבר הסהרה',
+    image_url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=80',
+    price: 990,
+    category: 'landscapes',
+    description: 'דיונות חול זהובות במדבר הסהרה'
+  },
+  {
+    id: '9',
+    title: 'שבט המסאי',
+    image_url: 'https://images.unsplash.com/photo-1523805009345-7448845a9e53?w=800&q=80',
+    price: 1350,
+    category: 'tribes',
+    description: 'לוחם משבט המסאי בלבוש מסורתי'
+  },
+  {
+    id: '10',
+    title: 'נשות שבט',
+    image_url: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=800&q=80',
+    price: 1250,
+    category: 'tribes',
+    description: 'נשים משבט אפריקאי בתלבושות מסורתיות'
+  },
+  {
+    id: '11',
+    title: 'ילדי הכפר',
+    image_url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80',
+    price: 980,
+    category: 'tribes',
+    description: 'ילדים משחקים בכפר אפריקאי'
+  },
+  {
+    id: '12',
+    title: 'ג׳ירפה בשדה',
+    image_url: 'https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=800&q=80',
+    price: 870,
+    category: 'wildlife',
+    description: 'ג׳ירפה אלגנטית בשדות אפריקה'
+  }
+];
 
 export default function Gallery() {
   const [filters, setFilters] = useState({
@@ -15,20 +119,23 @@ export default function Gallery() {
   });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState([]);
 
-  // Get category from URL
+  // Get category from URL and load products
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category');
     if (category) {
       setFilters(prev => ({ ...prev, category }));
     }
-  }, []);
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list(),
-  });
+    // Simulate loading delay for smooth UX
+    setTimeout(() => {
+      setProducts(mockProducts);
+      setIsLoading(false);
+    }, 500);
+  }, []);
 
   const filteredProducts = products.filter(product => {
     const categoryMatch = filters.category === 'all' || product.category === filters.category;

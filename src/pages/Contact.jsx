@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
 import { Send, Check, Mail, Phone, Instagram, MessageCircle, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,14 +35,21 @@ export default function Contact() {
     message: ''
   });
   const [openFaq, setOpenFaq] = useState(null);
-
-  const submitMutation = useMutation({
-    mutationFn: (data) => base44.entities.ContactMessage.create(data),
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await submitMutation.mutateAsync(formData);
+    setIsSubmitting(true);
+
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Log form data (in production, you'd send this to your backend)
+    console.log('Contact form submitted:', formData);
+
+    setIsSubmitting(false);
+    setIsSuccess(true);
     setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
   };
 
@@ -114,9 +119,54 @@ export default function Contact() {
               viewport={{ once: true }}
               className="bg-[#0d0d0d]/60 backdrop-blur-xl rounded-3xl border border-[#1a1a1a] p-8 md:p-12"
             >
-              <h2 className="text-2xl font-light text-[#f5f5f0] mb-8">
-                שלחו לנו הודעה
-              </h2>
+              <AnimatePresence mode="wait">
+                {!isSuccess ? (
+                  <motion.h2
+                    key="form-title"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="text-2xl font-light text-[#f5f5f0] mb-8"
+                  >
+                    שלחו לנו הודעה
+                  </motion.h2>
+                ) : (
+                  <motion.div
+                    key="success-title"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-center gap-3 mb-8"
+                  >
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 15,
+                        delay: 0.2
+                      }}
+                      className="w-12 h-12 bg-gradient-to-br from-[#d4af37] to-[#cd7f32] rounded-full flex items-center justify-center"
+                    >
+                      <motion.div
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.5, delay: 0.5 }}
+                      >
+                        <Check className="w-6 h-6 text-[#0d0d0d]" strokeWidth={3} />
+                      </motion.div>
+                    </motion.div>
+                    <motion.h2
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="text-2xl font-light text-[#d4af37]"
+                    >
+                      נשלח בהצלחה!
+                    </motion.h2>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -190,11 +240,11 @@ export default function Contact() {
 
                 <Button
                   type="submit"
-                  disabled={submitMutation.isPending || submitMutation.isSuccess}
+                  disabled={isSubmitting || isSuccess}
                   className="w-full py-6 bg-gradient-to-r from-[#d4af37] to-[#cd7f32] text-[#0d0d0d] font-medium rounded-xl hover:opacity-90 transition-opacity"
                 >
                   <AnimatePresence mode="wait">
-                    {!submitMutation.isPending && !submitMutation.isSuccess && (
+                    {!isSubmitting && !isSuccess && (
                       <motion.span
                         key="idle"
                         initial={{ opacity: 0 }}
@@ -206,7 +256,7 @@ export default function Contact() {
                         שלח הודעה
                       </motion.span>
                     )}
-                    {submitMutation.isPending && (
+                    {isSubmitting && (
                       <motion.span
                         key="loading"
                         initial={{ opacity: 0 }}
@@ -216,7 +266,7 @@ export default function Contact() {
                         שולח...
                       </motion.span>
                     )}
-                    {submitMutation.isSuccess && (
+                    {isSuccess && (
                       <motion.span
                         key="success"
                         initial={{ opacity: 0, scale: 0.5 }}
@@ -224,8 +274,18 @@ export default function Contact() {
                         exit={{ opacity: 0 }}
                         className="flex items-center justify-center gap-2"
                       >
-                        <Check className="w-4 h-4" />
-                        ההודעה נשלחה!
+                        <motion.div
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 200,
+                            damping: 10
+                          }}
+                        >
+                          <Check className="w-5 h-5" strokeWidth={3} />
+                        </motion.div>
+                        נשלח בהצלחה!
                       </motion.span>
                     )}
                   </AnimatePresence>
