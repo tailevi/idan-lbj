@@ -145,7 +145,7 @@ export default function Footer() {
                 Powered By Paper Shield
               </span>
               <motion.img
-                src="/paper-shield-logo.png"
+                src="https://imagedelivery.net/CEn1qezgB8qdSaeEKs2qUQ/d5b0cca3-7723-4f91-8a98-af23346db200/public"
                 alt="Paper Shield Logo"
                 className="w-16 h-16 object-contain"
                 animate={shieldControls}
