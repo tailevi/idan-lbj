@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
 
 export default function GalleryFilters({ 
   filters, 
@@ -11,25 +10,23 @@ export default function GalleryFilters({
 }) {
   const categories = [
     { value: 'all', label: 'הכל' },
-    { value: 'wildlife', label: 'טבע פראי' },
+    { value: 'wildlife', label: 'חיות' },
     { value: 'landscapes', label: 'נופים' },
-    { value: 'tribes', label: 'שבטים' }
-  ];
-
-  const sizes = [
-    { value: 'all', label: 'כל הגדלים' },
-    { value: '30×40', label: '30×40 ס"מ' },
-    { value: '50×70', label: '50×70 ס"מ' },
-    { value: '70×100', label: '70×100 ס"מ' },
-    { value: '100×150', label: '100×150 ס"מ' }
+    { value: 'Authenticity', label: 'אותנטיות' },
+    { value: 'Drama', label: 'דרמה' },
+    { value: 'Vision', label: 'חזון' },
+    { value: 'Fear', label: 'חשש' },
+    { value: 'Naturalness', label: 'טבעיות' },
+    { value: 'Focus', label: 'מיקוד' },
+    { value: 'Determination', label: 'נחישת' },
+    { value: 'Curiosity', label: 'סקרנות' },
+    { value: 'Power', label: 'עוצמה' },
+    { value: 'Peace', label: 'שלווה' },
+    { value: 'Wholeness', label: 'שלמות' }
   ];
 
   const handleCategoryClick = (value) => {
     onFilterChange({ ...filters, category: value });
-  };
-
-  const handlePriceChange = (value) => {
-    onFilterChange({ ...filters, maxPrice: value[0] });
   };
 
   const filterVariants = {
@@ -43,7 +40,6 @@ export default function GalleryFilters({
 
   const activeFilters = Object.entries(filters).filter(([key, value]) => {
     if (key === 'category' && value !== 'all') return true;
-    if (key === 'maxPrice' && value < 10000) return true;
     return false;
   });
 
@@ -89,25 +85,6 @@ export default function GalleryFilters({
             </div>
           </div>
 
-          {/* Price Range */}
-          <div className="mb-6">
-            <h4 className="text-[#8b7355] text-sm mb-3">טווח מחירים</h4>
-            <div className="px-2">
-              <Slider
-                defaultValue={[filters.maxPrice || 10000]}
-                max={10000}
-                min={500}
-                step={100}
-                onValueChange={handlePriceChange}
-                className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-none [&_.relative]:bg-[#2a2a2a] [&_[data-orientation=horizontal]>.bg-primary]:bg-[#d4af37]"
-              />
-              <div className="flex justify-between mt-2 text-sm text-[#8b7355]">
-                <span>₪500</span>
-                <span className="text-[#d4af37]">עד ₪{(filters.maxPrice || 10000).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
           {/* Active Filters */}
           {activeFilters.length > 0 && (
             <div className="pt-4 border-t border-[#1a1a1a]">
@@ -120,11 +97,11 @@ export default function GalleryFilters({
                     exit={{ scale: 0 }}
                     className="inline-flex items-center gap-1 px-3 py-1 bg-[#d4af37]/20 text-[#d4af37] text-xs rounded-full"
                   >
-                    {key === 'category' ? categories.find(c => c.value === value)?.label : `עד ₪${value}`}
+                    {categories.find(c => c.value === value)?.label}
                     <button
-                      onClick={() => onFilterChange({ 
-                        ...filters, 
-                        [key]: key === 'category' ? 'all' : 10000 
+                      onClick={() => onFilterChange({
+                        ...filters,
+                        category: 'all'
                       })}
                       className="hover:text-white transition-colors"
                     >
@@ -190,26 +167,6 @@ export default function GalleryFilters({
                 ))}
               </div>
             </div>
-
-            {/* Price Range */}
-            <div className="mb-6">
-              <h4 className="text-[#8b7355] text-sm mb-3">טווח מחירים</h4>
-              <div className="px-2">
-                <Slider
-                  defaultValue={[filters.maxPrice || 10000]}
-                  max={10000}
-                  min={500}
-                  step={100}
-                  onValueChange={handlePriceChange}
-                  className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-none"
-                />
-                <div className="flex justify-between mt-2 text-sm text-[#8b7355]">
-                  <span>₪500</span>
-                  <span className="text-[#d4af37]">עד ₪{(filters.maxPrice || 10000).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={onToggle}

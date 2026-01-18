@@ -5,6 +5,7 @@ import ProductCard from '../components/gallery/ProductCard';
 import ProductModal from '../components/gallery/ProductModal';
 import GalleryFilters from '../components/gallery/GalleryFilters';
 import ParticleField from '../components/effects/ParticleField';
+import { Slider } from '@/components/ui/slider';
 
 // Mock product data
 const mockProducts = [
@@ -13,7 +14,7 @@ const mockProducts = [
     title: 'אריה אפריקאי',
     image_url: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=800&q=80',
     price: 890,
-    category: 'wildlife',
+    categories: ['wildlife', 'landscapes'],
     description: 'צילום מרהיב של אריה אפריקאי בשקיעה',
     sizes: [
       { dimensions: '30×40 ס"מ', price: 890 },
@@ -27,7 +28,7 @@ const mockProducts = [
     title: 'פיל בסוואנה',
     image_url: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800&q=80',
     price: 950,
-    category: 'wildlife',
+    categories: ['wildlife', 'landscapes'],
     description: 'פיל מלכותי צועד בשטחי הסוואנה האפריקאית'
   },
   {
@@ -35,7 +36,7 @@ const mockProducts = [
     title: 'נמר בג׳ונגל',
     image_url: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&q=80',
     price: 1100,
-    category: 'wildlife',
+    categories: ['wildlife', 'landscapes'],
     description: 'נמר מסתורי בין עלי הג׳ונגל'
   },
   {
@@ -43,7 +44,7 @@ const mockProducts = [
     title: 'זברות במדבר',
     image_url: 'https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=800&q=80',
     price: 780,
-    category: 'wildlife',
+    categories: ['wildlife', 'landscapes'],
     description: 'עדר זברות בשחר האפריקאי'
   },
   {
@@ -51,7 +52,7 @@ const mockProducts = [
     title: 'הרי האלפים',
     image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
     price: 1200,
-    category: 'landscapes',
+    categories: ['landscapes', 'wildlife'],
     description: 'נוף מרהיב של הרי האלפים בשלג'
   },
   {
@@ -59,7 +60,7 @@ const mockProducts = [
     title: 'שקיעה באוקיינוס',
     image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
     price: 850,
-    category: 'landscapes',
+    categories: ['landscapes', 'tribes'],
     description: 'שקיעה זהובה מעל האוקיינוס השקט'
   },
   {
@@ -67,7 +68,7 @@ const mockProducts = [
     title: 'יער הגשם',
     image_url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80',
     price: 920,
-    category: 'landscapes',
+    categories: ['landscapes', 'wildlife'],
     description: 'יער גשם טרופי בכל הודו'
   },
   {
@@ -75,7 +76,7 @@ const mockProducts = [
     title: 'מדבר הסהרה',
     image_url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=80',
     price: 990,
-    category: 'landscapes',
+    categories: ['landscapes', 'tribes'],
     description: 'דיונות חול זהובות במדבר הסהרה'
   },
   {
@@ -83,7 +84,7 @@ const mockProducts = [
     title: 'שבט המסאי',
     image_url: 'https://images.unsplash.com/photo-1523805009345-7448845a9e53?w=800&q=80',
     price: 1350,
-    category: 'tribes',
+    categories: ['tribes', 'landscapes'],
     description: 'לוחם משבט המסאי בלבוש מסורתי'
   },
   {
@@ -91,7 +92,7 @@ const mockProducts = [
     title: 'נשות שבט',
     image_url: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=800&q=80',
     price: 1250,
-    category: 'tribes',
+    categories: ['tribes', 'wildlife'],
     description: 'נשים משבט אפריקאי בתלבושות מסורתיות'
   },
   {
@@ -99,7 +100,7 @@ const mockProducts = [
     title: 'ילדי הכפר',
     image_url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80',
     price: 980,
-    category: 'tribes',
+    categories: ['tribes', 'landscapes'],
     description: 'ילדים משחקים בכפר אפריקאי'
   },
   {
@@ -107,7 +108,7 @@ const mockProducts = [
     title: 'ג׳ירפה בשדה',
     image_url: 'https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=800&q=80',
     price: 870,
-    category: 'wildlife',
+    categories: ['wildlife', 'landscapes'],
     description: 'ג׳ירפה אלגנטית בשדות אפריקה'
   }
 ];
@@ -138,7 +139,7 @@ export default function Gallery() {
   }, []);
 
   const filteredProducts = products.filter(product => {
-    const categoryMatch = filters.category === 'all' || product.category === filters.category;
+    const categoryMatch = filters.category === 'all' || product.categories.includes(filters.category);
     const priceMatch = product.price <= filters.maxPrice;
     return categoryMatch && priceMatch;
   });
@@ -209,6 +210,29 @@ export default function Gallery() {
 
             {/* Products Grid */}
             <div className="flex-1">
+              {/* Price Range Filter - Above Pictures */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 bg-[#0d0d0d]/60 backdrop-blur-xl rounded-2xl border border-[#1a1a1a] p-4"
+                dir="rtl"
+              >
+                <div className="flex items-center gap-6">
+                  <h4 className="text-[#8b7355] text-sm whitespace-nowrap">טווח מחירים:</h4>
+                  <div className="flex-1 px-2">
+                    <Slider
+                      defaultValue={[filters.maxPrice || 10000]}
+                      max={10000}
+                      min={500}
+                      step={100}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, maxPrice: value[0] }))}
+                      className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-none [&_.relative]:bg-[#2a2a2a] [&_[data-orientation=horizontal]>.bg-primary]:bg-[#d4af37]"
+                    />
+                  </div>
+                  <span className="text-[#d4af37] text-sm whitespace-nowrap">עד ₪{(filters.maxPrice || 10000).toLocaleString()}</span>
+                </div>
+              </motion.div>
+
               {/* Results Count */}
               <motion.div
                 initial={{ opacity: 0 }}
@@ -284,14 +308,6 @@ export default function Gallery() {
           </div>
         </div>
       </section>
-
-      {/* Mobile Filters */}
-      <GalleryFilters
-        filters={filters}
-        onFilterChange={setFilters}
-        isOpen={isFilterOpen}
-        onToggle={() => setIsFilterOpen(!isFilterOpen)}
-      />
 
       {/* Product Modal */}
       <ProductModal

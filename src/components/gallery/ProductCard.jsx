@@ -7,9 +7,20 @@ export default function ProductCard({ product, onQuickView, onAddToCart }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const categoryLabels = {
-    wildlife: 'טבע פראי',
+    wildlife: 'חיות',
     landscapes: 'נופים',
-    tribes: 'שבטים'
+    tribes: 'אנשים',
+    Authenticity: 'אותנטיות',
+    Drama:'דרמה',
+    Vision:'חזון',
+    Fear:'חשש',
+    Naturalness:'טבעיות',
+    Focus:'מיקוד',
+    Determination:'נחישת',
+    Curiosity:'סקרנות',
+    Power:'עוצמה',
+    Peace:'שלווה',
+    Wholeness:'שלמות'
   };
 
   return (
@@ -70,11 +81,16 @@ export default function ProductCard({ product, onQuickView, onAddToCart }) {
           />
         </motion.button>
 
-        {/* Category Badge */}
-        <div className="absolute top-4 right-4">
-          <span className="px-3 py-1 bg-black/40 backdrop-blur-sm text-[#d4af37] text-xs rounded-full">
-            {categoryLabels[product.category]}
-          </span>
+        {/* Category Badges */}
+        <div className="absolute top-4 right-4 flex flex-col gap-1">
+          {product.categories?.map((cat, index) => (
+            <span
+              key={index}
+              className="px-3 py-1 bg-black/40 backdrop-blur-sm text-[#d4af37] text-xs rounded-full"
+            >
+              {categoryLabels[cat]}
+            </span>
+          ))}
         </div>
 
         {/* Overlay on Hover */}
