@@ -9,8 +9,19 @@ const sizes = [
   { label: '100×150', width: 100, height: 150, price: 4500 }
 ];
 
+const materials = [
+  { type: 'קנבס קלאסי', priceModifier: 1, description: 'קנבס כותנה איכותי - הבחירה הנפוצה' },
+  { type: 'קנבס פרימיום', priceModifier: 1.3, description: 'קנבס כותנה עבה במיוחד עם ציפוי מט' },
+  { type: 'קנבס מיוזיאום', priceModifier: 1.6, description: 'איכות מוזיאון עם ציפוי UV מגן' }
+];
+
 export default function CanvasSizes() {
   const [selectedSize, setSelectedSize] = useState(1);
+  const [selectedMaterial, setSelectedMaterial] = useState(0);
+
+  const calculatePrice = () => {
+    return Math.round(sizes[selectedSize].price * materials[selectedMaterial].priceModifier);
+  };
 
   const getCanvasScale = (size) => {
     const maxScale = 0.7;
@@ -77,7 +88,7 @@ export default function CanvasSizes() {
                   {/* Canvas Frame */}
                   <div className="relative bg-[#1a1a1a] p-2 rounded shadow-2xl shadow-black/50">
                     <img
-                      src="https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=600&q=80"
+                      src="/products/Celestial_Halo_of_Majesty_.webp"
                       alt="Canvas Preview"
                       className="w-[300px] aspect-[3/4] object-cover rounded"
                     />
@@ -160,6 +171,54 @@ export default function CanvasSizes() {
                 </motion.button>
               ))}
             </div>
+
+            {/* Material Selection */}
+            <div className="mt-6">
+              <h3 className="text-[#f5f5f0] text-sm mb-3">סוג קנבס:</h3>
+              <div className="space-y-3">
+                {materials.map((material, index) => (
+                  <motion.button
+                    key={material.type}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedMaterial(index)}
+                    className={`relative w-full p-4 rounded-xl border-2 text-right transition-all ${
+                      selectedMaterial === index
+                        ? 'border-[#d4af37] bg-[#d4af37]/10'
+                        : 'border-[#1a1a1a] bg-[#0d0d0d] hover:border-[#2a2a2a]'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#f5f5f0] font-medium">{material.type}</span>
+                      {material.priceModifier > 1 && (
+                        <span className={`text-sm ${selectedMaterial === index ? 'text-[#d4af37]' : 'text-[#8b7355]'}`}>
+                          +{Math.round((material.priceModifier - 1) * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[#8b7355] text-xs mt-1">{material.description}</p>
+
+                    {selectedMaterial === index && (
+                      <motion.div
+                        layoutId="materialIndicator"
+                        className="absolute top-3 left-3 w-3 h-3 bg-[#d4af37] rounded-full"
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Total Price */}
+            <motion.div
+              key={calculatePrice()}
+              initial={{ scale: 1.1 }}
+              animate={{ scale: 1 }}
+              className="mt-6 p-4 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] text-center"
+            >
+              <span className="text-[#8b7355] text-sm">מחיר משוער: </span>
+              <span className="text-[#d4af37] text-2xl font-medium">₪{calculatePrice().toLocaleString()}</span>
+            </motion.div>
 
             {/* Info Text */}
             <motion.div

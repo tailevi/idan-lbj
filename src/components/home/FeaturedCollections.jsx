@@ -9,21 +9,21 @@ const collections = [
     id: 'wildlife',
     title: 'טבע פראי',
     subtitle: 'Wildlife',
-    image: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=800&q=80',
+    image: '/products/The_Golden_Majesty_of_the_Savannah_.webp',
     count: 45
   },
   {
     id: 'landscapes',
     title: 'נופים',
     subtitle: 'Landscapes',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+    image: '/products/Echoes_of_a_Timeless_Earth_.webp',
     count: 38
   },
   {
     id: 'tribes',
     title: 'שבטים',
     subtitle: 'Tribes',
-    image: 'https://images.unsplash.com/photo-1523805009345-7448845a9e53?w=800&q=80',
+    image: '/products/The_Sculpted_Heritage_of_Himba_.webp',
     count: 22
   }
 ];

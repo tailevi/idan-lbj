@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 
 export default function ProductModal({ product, isOpen, onClose, onAddToCart }) {
   const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedMaterial, setSelectedMaterial] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
 
@@ -17,13 +18,26 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
     { dimensions: '100×150 ס"מ', price: product.price * 3 },
   ];
 
+  const materials = product.materials || [
+    { type: 'קנבס קלאסי', priceModifier: 1 },
+    { type: 'קנבס פרימיום', priceModifier: 1.3 },
+    { type: 'קנבס מיוזיאום', priceModifier: 1.6 }
+  ];
+
   const allImages = [product.image_url, ...(product.gallery_images || [])];
 
+  const calculateFinalPrice = () => {
+    if (selectedSize === null) return 0;
+    return Math.round(sizes[selectedSize].price * materials[selectedMaterial].priceModifier);
+  };
+
   const handleAddToCart = () => {
-    if (!selectedSize) return;
+    if (selectedSize === null) return;
     onAddToCart({
       ...product,
       selectedSize: sizes[selectedSize],
+      selectedMaterial: materials[selectedMaterial],
+      finalPrice: calculateFinalPrice(),
       quantity
     });
     onClose();
@@ -174,6 +188,35 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                   </div>
                 </div>
 
+                {/* Material Selection */}
+                <div className="mb-6">
+                  <h3 className="text-[#f5f5f0] text-sm mb-3">בחר סוג קנבס:</h3>
+                  <div className="flex flex-col gap-3">
+                    {materials.map((material, i) => (
+                      <motion.button
+                        key={i}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedMaterial(i)}
+                        className={`p-4 rounded-xl border-2 text-right transition-all ${
+                          selectedMaterial === i
+                            ? 'border-[#d4af37] bg-[#d4af37]/10'
+                            : 'border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#3a3a3a]'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="text-[#f5f5f0] font-medium">{material.type}</div>
+                          {material.priceModifier > 1 && (
+                            <div className={`text-sm ${selectedMaterial === i ? 'text-[#d4af37]' : 'text-[#8b7355]'}`}>
+                              +{Math.round((material.priceModifier - 1) * 100)}%
+                            </div>
+                          )}
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Quantity */}
                 <div className="mb-8">
                   <h3 className="text-[#f5f5f0] text-sm mb-3">כמות:</h3>
@@ -208,12 +251,12 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                     >
                       <span className="text-[#8b7355]">סה"כ:</span>
                       <motion.span
-                        key={sizes[selectedSize].price * quantity}
+                        key={calculateFinalPrice() * quantity}
                         initial={{ scale: 1.2 }}
                         animate={{ scale: 1 }}
                         className="text-2xl font-medium text-[#d4af37]"
                       >
-                        ₪{(sizes[selectedSize].price * quantity).toLocaleString()}
+                        ₪{(calculateFinalPrice() * quantity).toLocaleString()}
                       </motion.span>
                     </motion.div>
                   )}
