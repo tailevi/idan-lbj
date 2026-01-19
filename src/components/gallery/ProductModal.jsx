@@ -1,13 +1,67 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, ShoppingBag, ChevronRight, ChevronLeft } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, ChevronRight, ChevronLeft, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Print types with their associated frames
+const printTypes = [
+  { type: 'הדבקה אקרילית', priceModifier: 1 },
+  { type: '100% כותנה', priceModifier: 1 },
+  { type: 'קנבס מודרני', priceModifier: 1 }
+];
+
+// Frame options for each print type
+const framesByPrintType = {
+  'הדבקה אקרילית': [
+    {
+      name: 'Hidden Minimalist',
+      priceModifier: 1,
+      description: 'ללא מסגרת גלויה. מערכת תלייה אחורית נסתרת מאלומיניום המעניקה מראה "צף" ונקי.'
+    },
+    {
+      name: 'Modern Shadow Gallery Box',
+      priceModifier: 1.4,
+      description: 'מסגרת עץ צפה. מסגרת עץ מלא עמוקה המקיפה את האקריליק עם רווח היקפי יוקרתי.'
+    }
+  ],
+  '100% כותנה': [
+    {
+      name: 'Classic Studio Frame',
+      priceModifier: 1,
+      description: 'מסגרת עץ אורן או אלומיניום. כולל זכוכית שקופה ופספרטו (שוליים לבנים) נטול חומצה.'
+    },
+    {
+      name: 'Hardwood Gallery Selection',
+      priceModifier: 1.3,
+      description: 'מסגרת עץ מלא. עצים קשים ויוקרתיים (אלון, אגוז או אפר) בגימור טבעי או שחור מט.'
+    },
+    {
+      name: 'Signature Museum Collection',
+      priceModifier: 1.6,
+      description: 'מסגרת עץ פרימיום + זכוכית מוזיאונית. זכוכית בלתי נראית המונעת השתקפויות ומגנה מפני UV.'
+    }
+  ],
+  'קנבס מודרני': [
+    {
+      name: 'Raw Gallery Wrap',
+      priceModifier: 1,
+      description: 'קנבס מתוח. התמונה עוטפת את שולי שלדת העץ הפנימית למראה טבעי וללא מסגרת חיצונית.'
+    },
+    {
+      name: 'Essential Shadow Float',
+      priceModifier: 1.2,
+      description: 'מסגרת צפה מודרנית. מסגרת מחומר פולימרי איכותי המעניקה מראה מעוצב ונקי.'
+    }
+  ]
+};
 
 export default function ProductModal({ product, isOpen, onClose, onAddToCart }) {
   const [selectedSize, setSelectedSize] = useState(null);
-  const [selectedMaterial, setSelectedMaterial] = useState(0);
+  const [selectedPrintType, setSelectedPrintType] = useState(0);
+  const [selectedFrame, setSelectedFrame] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
+  const [hoveredFrame, setHoveredFrame] = useState(null);
 
   if (!product) return null;
 
@@ -18,17 +72,22 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
     { dimensions: '100×150 ס"מ', price: product.price * 3 },
   ];
 
-  const materials = product.materials || [
-    { type: 'קנבס קלאסי', priceModifier: 1 },
-    { type: 'קנבס פרימיום', priceModifier: 1.3 },
-    { type: 'קנבס מיוזיאום', priceModifier: 1.6 }
-  ];
+  const currentPrintType = printTypes[selectedPrintType];
+  const availableFrames = framesByPrintType[currentPrintType.type] || [];
+  const currentFrame = availableFrames[selectedFrame] || availableFrames[0];
 
   const allImages = [product.image_url, ...(product.gallery_images || [])];
 
   const calculateFinalPrice = () => {
     if (selectedSize === null) return 0;
-    return Math.round(sizes[selectedSize].price * materials[selectedMaterial].priceModifier);
+    const frameModifier = currentFrame?.priceModifier || 1;
+    return Math.round(sizes[selectedSize].price * frameModifier);
+  };
+
+  // Reset frame selection when print type changes
+  const handlePrintTypeChange = (index) => {
+    setSelectedPrintType(index);
+    setSelectedFrame(0);
   };
 
   const handleAddToCart = () => {
@@ -36,7 +95,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
     onAddToCart({
       ...product,
       selectedSize: sizes[selectedSize],
-      selectedMaterial: materials[selectedMaterial],
+      selectedPrintType: currentPrintType,
+      selectedFrame: currentFrame,
       finalPrice: calculateFinalPrice(),
       quantity
     });
@@ -142,6 +202,16 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                     ))}
                   </div>
                 )}
+
+                {/* Description - below the picture */}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-[#8b7355] mt-4"
+                >
+                  {product.description || 'יצירה מקורית מודפסת על קנבס איכותי עם מסגרת פנימית'}
+                </motion.p>
               </div>
 
               {/* Details Section */}
@@ -149,19 +219,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                 <motion.h2
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-2xl md:text-3xl font-light text-[#f5f5f0] mb-2"
+                  className="text-2xl md:text-3xl font-light text-[#f5f5f0] mb-6"
                 >
                   {product.title}
                 </motion.h2>
-
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-[#8b7355] mb-6"
-                >
-                  {product.description || 'יצירה מקורית מודפסת על קנבס איכותי עם מסגרת פנימית'}
-                </motion.p>
 
                 {/* Size Selection */}
                 <div className="mb-6">
@@ -188,27 +249,73 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                   </div>
                 </div>
 
-                {/* Material Selection */}
+                {/* Print Type Selection */}
                 <div className="mb-6">
-                  <h3 className="text-[#f5f5f0] text-sm mb-3">בחר סוג קנבס:</h3>
+                  <h3 className="text-[#f5f5f0] text-sm mb-3">בחר סוג הדפסה:</h3>
                   <div className="flex flex-col gap-3">
-                    {materials.map((material, i) => (
+                    {printTypes.map((printType, i) => (
                       <motion.button
                         key={i}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedMaterial(i)}
+                        onClick={() => handlePrintTypeChange(i)}
                         className={`p-4 rounded-xl border-2 text-right transition-all ${
-                          selectedMaterial === i
+                          selectedPrintType === i
                             ? 'border-[#d4af37] bg-[#d4af37]/10'
                             : 'border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#3a3a3a]'
                         }`}
                       >
                         <div className="flex justify-between items-center">
-                          <div className="text-[#f5f5f0] font-medium">{material.type}</div>
-                          {material.priceModifier > 1 && (
-                            <div className={`text-sm ${selectedMaterial === i ? 'text-[#d4af37]' : 'text-[#8b7355]'}`}>
-                              +{Math.round((material.priceModifier - 1) * 100)}%
+                          <div className="text-[#f5f5f0] font-medium">{printType.type}</div>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Frame Selection */}
+                <div className="mb-6">
+                  <h3 className="text-[#f5f5f0] text-sm mb-3">בחר מסגרת:</h3>
+                  <div className="flex flex-col gap-3">
+                    {availableFrames.map((frame, i) => (
+                      <motion.button
+                        key={i}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedFrame(i)}
+                        className={`p-4 rounded-xl border-2 text-right transition-all ${
+                          selectedFrame === i
+                            ? 'border-[#d4af37] bg-[#d4af37]/10'
+                            : 'border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#3a3a3a]'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#f5f5f0] font-medium">{frame.name}</span>
+                            <div
+                              className="relative"
+                              onMouseEnter={() => setHoveredFrame(i)}
+                              onMouseLeave={() => setHoveredFrame(null)}
+                            >
+                              <HelpCircle className="w-4 h-4 text-[#8b7355] hover:text-[#d4af37] cursor-help transition-colors" />
+                              <AnimatePresence>
+                                {hoveredFrame === i && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 5 }}
+                                    className="absolute z-50 top-6 right-0 w-64 p-3 bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg shadow-xl"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <p className="text-sm text-[#f5f5f0] leading-relaxed">{frame.description}</p>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                          {frame.priceModifier > 1 && (
+                            <div className={`text-sm ${selectedFrame === i ? 'text-[#d4af37]' : 'text-[#8b7355]'}`}>
+                              +{Math.round((frame.priceModifier - 1) * 100)}%
                             </div>
                           )}
                         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, HelpCircle } from 'lucide-react';
 
 const sizes = [
   { label: '30×40', width: 30, height: 40, price: 1200 },
@@ -9,18 +9,76 @@ const sizes = [
   { label: '100×150', width: 100, height: 150, price: 4500 }
 ];
 
-const materials = [
-  { type: 'קנבס קלאסי', priceModifier: 1, description: 'קנבס כותנה איכותי - הבחירה הנפוצה' },
-  { type: 'קנבס פרימיום', priceModifier: 1.3, description: 'קנבס כותנה עבה במיוחד עם ציפוי מט' },
-  { type: 'קנבס מיוזיאום', priceModifier: 1.6, description: 'איכות מוזיאון עם ציפוי UV מגן' }
+// Print types
+const printTypes = [
+  { type: 'הדבקה אקרילית', priceModifier: 1 },
+  { type: '100% כותנה', priceModifier: 1 },
+  { type: 'קנבס מודרני', priceModifier: 1 }
 ];
+
+// Frame options for each print type
+const framesByPrintType = {
+  'הדבקה אקרילית': [
+    {
+      name: 'Hidden Minimalist',
+      priceModifier: 1,
+      description: 'ללא מסגרת גלויה. מערכת תלייה אחורית נסתרת מאלומיניום המעניקה מראה "צף" ונקי.'
+    },
+    {
+      name: 'Modern Shadow Gallery Box',
+      priceModifier: 1.4,
+      description: 'מסגרת עץ צפה. מסגרת עץ מלא עמוקה המקיפה את האקריליק עם רווח היקפי יוקרתי.'
+    }
+  ],
+  '100% כותנה': [
+    {
+      name: 'Classic Studio Frame',
+      priceModifier: 1,
+      description: 'מסגרת עץ אורן או אלומיניום. כולל זכוכית שקופה ופספרטו (שוליים לבנים) נטול חומצה.'
+    },
+    {
+      name: 'Hardwood Gallery Selection',
+      priceModifier: 1.3,
+      description: 'מסגרת עץ מלא. עצים קשים ויוקרתיים (אלון, אגוז או אפר) בגימור טבעי או שחור מט.'
+    },
+    {
+      name: 'Signature Museum Collection',
+      priceModifier: 1.6,
+      description: 'מסגרת עץ פרימיום + זכוכית מוזיאונית. זכוכית בלתי נראית המונעת השתקפויות ומגנה מפני UV.'
+    }
+  ],
+  'קנבס מודרני': [
+    {
+      name: 'Raw Gallery Wrap',
+      priceModifier: 1,
+      description: 'קנבס מתוח. התמונה עוטפת את שולי שלדת העץ הפנימית למראה טבעי וללא מסגרת חיצונית.'
+    },
+    {
+      name: 'Essential Shadow Float',
+      priceModifier: 1.2,
+      description: 'מסגרת צפה מודרנית. מסגרת מחומר פולימרי איכותי המעניקה מראה מעוצב ונקי.'
+    }
+  ]
+};
 
 export default function CanvasSizes() {
   const [selectedSize, setSelectedSize] = useState(1);
-  const [selectedMaterial, setSelectedMaterial] = useState(0);
+  const [selectedPrintType, setSelectedPrintType] = useState(0);
+  const [selectedFrame, setSelectedFrame] = useState(0);
+  const [hoveredFrame, setHoveredFrame] = useState(null);
+
+  const currentPrintType = printTypes[selectedPrintType];
+  const availableFrames = framesByPrintType[currentPrintType.type] || [];
+  const currentFrame = availableFrames[selectedFrame] || availableFrames[0];
 
   const calculatePrice = () => {
-    return Math.round(sizes[selectedSize].price * materials[selectedMaterial].priceModifier);
+    const frameModifier = currentFrame?.priceModifier || 1;
+    return Math.round(sizes[selectedSize].price * frameModifier);
+  };
+
+  const handlePrintTypeChange = (index) => {
+    setSelectedPrintType(index);
+    setSelectedFrame(0);
   };
 
   const getCanvasScale = (size) => {
@@ -172,35 +230,87 @@ export default function CanvasSizes() {
               ))}
             </div>
 
-            {/* Material Selection */}
+            {/* Print Type Selection */}
             <div className="mt-6">
-              <h3 className="text-[#f5f5f0] text-sm mb-3">סוג קנבס:</h3>
+              <h3 className="text-[#f5f5f0] text-sm mb-3">סוג הדפסה:</h3>
               <div className="space-y-3">
-                {materials.map((material, index) => (
+                {printTypes.map((printType, index) => (
                   <motion.button
-                    key={material.type}
+                    key={printType.type}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedMaterial(index)}
+                    onClick={() => handlePrintTypeChange(index)}
                     className={`relative w-full p-4 rounded-xl border-2 text-right transition-all ${
-                      selectedMaterial === index
+                      selectedPrintType === index
                         ? 'border-[#d4af37] bg-[#d4af37]/10'
                         : 'border-[#1a1a1a] bg-[#0d0d0d] hover:border-[#2a2a2a]'
                     }`}
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-[#f5f5f0] font-medium">{material.type}</span>
-                      {material.priceModifier > 1 && (
-                        <span className={`text-sm ${selectedMaterial === index ? 'text-[#d4af37]' : 'text-[#8b7355]'}`}>
-                          +{Math.round((material.priceModifier - 1) * 100)}%
+                      <span className="text-[#f5f5f0] font-medium">{printType.type}</span>
+                    </div>
+
+                    {selectedPrintType === index && (
+                      <motion.div
+                        layoutId="printTypeIndicator"
+                        className="absolute top-3 left-3 w-3 h-3 bg-[#d4af37] rounded-full"
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Frame Selection */}
+            <div className="mt-6">
+              <h3 className="text-[#f5f5f0] text-sm mb-3">בחר מסגרת:</h3>
+              <div className="space-y-3">
+                {availableFrames.map((frame, index) => (
+                  <motion.button
+                    key={frame.name}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedFrame(index)}
+                    className={`relative w-full p-4 rounded-xl border-2 text-right transition-all ${
+                      selectedFrame === index
+                        ? 'border-[#d4af37] bg-[#d4af37]/10'
+                        : 'border-[#1a1a1a] bg-[#0d0d0d] hover:border-[#2a2a2a]'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#f5f5f0] font-medium">{frame.name}</span>
+                        <div
+                          className="relative"
+                          onMouseEnter={() => setHoveredFrame(index)}
+                          onMouseLeave={() => setHoveredFrame(null)}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <HelpCircle className="w-4 h-4 text-[#8b7355] hover:text-[#d4af37] cursor-help transition-colors" />
+                          <AnimatePresence>
+                            {hoveredFrame === index && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 5 }}
+                                className="absolute z-50 top-6 right-0 w-64 p-3 bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg shadow-xl"
+                              >
+                                <p className="text-sm text-[#f5f5f0] leading-relaxed">{frame.description}</p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                      {frame.priceModifier > 1 && (
+                        <span className={`text-sm ${selectedFrame === index ? 'text-[#d4af37]' : 'text-[#8b7355]'}`}>
+                          +{Math.round((frame.priceModifier - 1) * 100)}%
                         </span>
                       )}
                     </div>
-                    <p className="text-[#8b7355] text-xs mt-1">{material.description}</p>
 
-                    {selectedMaterial === index && (
+                    {selectedFrame === index && (
                       <motion.div
-                        layoutId="materialIndicator"
+                        layoutId="frameIndicator"
                         className="absolute top-3 left-3 w-3 h-3 bg-[#d4af37] rounded-full"
                       />
                     )}

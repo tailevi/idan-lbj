@@ -100,6 +100,19 @@ export default function ProductCard({ product, onQuickView, onAddToCart }) {
           animate={{ opacity: isHovered ? 1 : 0 }}
           transition={{ duration: 0.3 }}
         >
+          {/* Description - below the picture */}
+          {product.description && (
+            <motion.p
+              className="text-[#a0a0a0] text-sm mb-3 line-clamp-2"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+              dir="rtl"
+            >
+              {product.description}
+            </motion.p>
+          )}
+
           <motion.h3
             className="text-[#f5f5f0] text-lg font-medium mb-1"
             initial={{ y: 20, opacity: 0 }}
