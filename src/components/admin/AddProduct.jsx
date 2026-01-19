@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Image, AlertCircle, CheckCircle, ChevronDown } from 'lucide-react';
+import { Plus, Image, AlertCircle, CheckCircle, ChevronDown, Upload, X } from 'lucide-react';
 
 const categoryLabels = {
   wildlife: 'חיות',
@@ -32,9 +32,11 @@ export default function AddProduct() {
     category2: '',
     image: ''
   });
+  const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
   const [openDropdown, setOpenDropdown] = useState(null);
+  const fileInputRef = useRef(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -109,6 +111,10 @@ export default function AddProduct() {
         category2: '',
         image: ''
       });
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
 
       // Clear success message after 3 seconds
       setTimeout(() => setSubmitStatus(null), 3000);
@@ -121,6 +127,35 @@ export default function AddProduct() {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check if it's a webp file
+      if (!file.type.includes('webp') && !file.name.toLowerCase().endsWith('.webp')) {
+        setErrors(prev => ({ ...prev, image: 'אנא העלה תמונה בפורמט webp בלבד' }));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData(prev => ({ ...prev, image: reader.result }));
+        if (errors.image) {
+          setErrors(prev => ({ ...prev, image: null }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, image: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -258,20 +293,52 @@ export default function AddProduct() {
             )}
           </div>
 
-          {/* Image */}
+          {/* Image Upload */}
           <div>
-            <label className="block text-[#f5f5f0] text-sm mb-2">קישור לתמונה *</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={formData.image}
-                onChange={(e) => handleInputChange('image', e.target.value)}
-                className={`w-full bg-[#0d0d0d] border ${errors.image ? 'border-red-500' : 'border-[#3a3a3a]'} rounded-xl px-4 py-3 pr-12 text-[#f5f5f0] placeholder-[#666] focus:outline-none focus:border-[#d4af37] transition-colors`}
-                placeholder="/products/image_name.webp"
-                dir="ltr"
-              />
-              <Image className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#666]" />
-            </div>
+            <label className="block text-[#f5f5f0] text-sm mb-2">העלאת תמונה *</label>
+
+            {!imagePreview ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className={`w-full bg-[#0d0d0d] border-2 border-dashed ${errors.image ? 'border-red-500' : 'border-[#3a3a3a]'} rounded-xl p-8 cursor-pointer hover:border-[#d4af37] transition-colors flex flex-col items-center justify-center gap-3`}
+              >
+                <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-[#666]" />
+                </div>
+                <div className="text-center">
+                  <p className="text-[#f5f5f0] font-medium">לחץ להעלאת תמונה</p>
+                  <p className="text-[#666] text-sm mt-1">פורמט webp בלבד</p>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="w-full aspect-video bg-[#0d0d0d] rounded-xl overflow-hidden border border-[#3a3a3a]">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={removeImage}
+                  className="absolute top-2 left-2 p-2 bg-red-500 rounded-full text-white"
+                >
+                  <X className="w-4 h-4" />
+                </motion.button>
+              </div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".webp,image/webp"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+
             <p className="text-[#d4af37] text-sm mt-2 flex items-center gap-1">
               <AlertCircle className="w-4 h-4" />
               אנא המר את התמונה לפורמט webp לפני ההעלאה!

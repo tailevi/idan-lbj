@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit, Trash2, Image, AlertCircle, CheckCircle, ChevronDown, X } from 'lucide-react';
+import { Edit, Trash2, Image, AlertCircle, CheckCircle, ChevronDown, X, Upload } from 'lucide-react';
 
 const categoryLabels = {
   wildlife: 'חיות',
@@ -56,6 +56,9 @@ export default function EditProduct() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ show: false, type: null }); // type: 'edit' | 'delete'
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageError, setImageError] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (selectedProductId) {
@@ -68,6 +71,11 @@ export default function EditProduct() {
         category2: '',
         image: ''
       });
+      setImagePreview(null);
+      setImageError(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } else {
       setSelectedProduct(null);
     }
@@ -75,6 +83,34 @@ export default function EditProduct() {
 
   const handleNewDataChange = (field, value) => {
     setNewData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check if it's a webp file
+      if (!file.type.includes('webp') && !file.name.toLowerCase().endsWith('.webp')) {
+        setImageError('אנא העלה תמונה בפורמט webp בלבד');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setNewData(prev => ({ ...prev, image: reader.result }));
+        setImageError(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setNewData(prev => ({ ...prev, image: '' }));
+    setImageError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleEditConfirm = () => {
@@ -104,6 +140,10 @@ export default function EditProduct() {
     setSubmitStatus('success');
     setConfirmModal({ show: false, type: null });
     setNewData({ title: '', price: '', category1: '', category2: '', image: '' });
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
 
     setTimeout(() => setSubmitStatus(null), 3000);
   };
@@ -394,20 +434,61 @@ export default function EditProduct() {
                     />
                   </div>
 
-                  {/* Image */}
+                  {/* Image Upload */}
                   <div>
-                    <label className="block text-[#a8a8a8] text-sm mb-2">קישור לתמונה</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={newData.image}
-                        onChange={(e) => handleNewDataChange('image', e.target.value)}
-                        className="w-full bg-[#0d0d0d] border border-[#3a3a3a] rounded-xl px-4 py-3 pr-12 text-[#f5f5f0] placeholder-[#666] focus:outline-none focus:border-[#d4af37] transition-colors"
-                        placeholder="/products/new_image.webp"
-                        dir="ltr"
-                      />
-                      <Image className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#666]" />
-                    </div>
+                    <label className="block text-[#a8a8a8] text-sm mb-2">העלאת תמונה חדשה</label>
+
+                    {!imagePreview ? (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`w-full bg-[#0d0d0d] border-2 border-dashed ${imageError ? 'border-red-500' : 'border-[#3a3a3a]'} rounded-xl p-6 cursor-pointer hover:border-[#d4af37] transition-colors flex flex-col items-center justify-center gap-2`}
+                      >
+                        <div className="w-12 h-12 bg-[#1a1a1a] rounded-full flex items-center justify-center">
+                          <Upload className="w-6 h-6 text-[#666]" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[#a8a8a8] text-sm">לחץ להעלאת תמונה חדשה</p>
+                          <p className="text-[#666] text-xs mt-1">פורמט webp בלבד</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <div className="w-full aspect-video bg-[#0d0d0d] rounded-xl overflow-hidden border border-[#3a3a3a]">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={removeImage}
+                          className="absolute top-2 left-2 p-2 bg-red-500 rounded-full text-white"
+                        >
+                          <X className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    )}
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".webp,image/webp"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+
+                    <p className="text-[#666] text-xs mt-2">
+                      השאר ריק כדי לשמור על התמונה הנוכחית
+                    </p>
+                    {imageError && (
+                      <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {imageError}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

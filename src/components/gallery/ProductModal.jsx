@@ -274,9 +274,9 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                 </div>
 
                 {/* Frame Selection */}
-                <div className="mb-6">
+                <div className="mb-6 overflow-visible">
                   <h3 className="text-[#f5f5f0] text-sm mb-3">בחר מסגרת:</h3>
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 overflow-visible">
                     {availableFrames.map((frame, i) => (
                       <motion.button
                         key={i}
@@ -293,7 +293,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                           <div className="flex items-center gap-2">
                             <span className="text-[#f5f5f0] font-medium">{frame.name}</span>
                             <div
-                              className="relative"
+                              className="relative z-[100]"
                               onMouseEnter={() => setHoveredFrame(i)}
                               onMouseLeave={() => setHoveredFrame(null)}
                             >
@@ -301,13 +301,19 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                               <AnimatePresence>
                                 {hoveredFrame === i && (
                                   <motion.div
-                                    initial={{ opacity: 0, y: 5 }}
+                                    initial={{ opacity: 0, y: -5 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 5 }}
-                                    className="absolute z-50 top-6 right-0 w-64 p-3 bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg shadow-xl"
+                                    exit={{ opacity: 0, y: -5 }}
+                                    className="absolute z-[9999] bottom-full right-0 mb-2 w-64 p-3 bg-[#0d0d0d] border border-[#d4af37]/30 rounded-lg shadow-2xl"
+                                    style={{
+                                      boxShadow: '0 10px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,175,55,0.2)'
+                                    }}
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <p className="text-sm text-[#f5f5f0] leading-relaxed">{frame.description}</p>
+                                    <div className="absolute bottom-0 right-4 translate-y-full">
+                                      <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-[#d4af37]/30" />
+                                    </div>
                                   </motion.div>
                                 )}
                               </AnimatePresence>
