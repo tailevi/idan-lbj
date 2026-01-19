@@ -6,16 +6,24 @@ import Gallery from "./Gallery";
 
 import Contact from "./Contact";
 
+import Admin from "./Admin";
+
+import AdminLogin from "./AdminLogin";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
-    
+
     Home: Home,
-    
+
     Gallery: Gallery,
-    
+
     Contact: Contact,
-    
+
+    Admin: Admin,
+
+    AdminLogin: AdminLogin,
+
 }
 
 function _getCurrentPage(url) {
@@ -36,19 +44,31 @@ function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
     
+    // Check if we're on admin pages (no Layout wrapper needed)
+    const isAdminPage = location.pathname.toLowerCase().startsWith('/admin');
+
+    if (isAdminPage) {
+        return (
+            <Routes>
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin-login" element={<AdminLogin />} />
+            </Routes>
+        );
+    }
+
     return (
         <Layout currentPageName={currentPage}>
-            <Routes>            
-                
+            <Routes>
+
                     <Route path="/" element={<Home />} />
-                
-                
+
+
                 <Route path="/Home" element={<Home />} />
-                
+
                 <Route path="/Gallery" element={<Gallery />} />
-                
+
                 <Route path="/Contact" element={<Contact />} />
-                
+
             </Routes>
         </Layout>
     );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, Settings } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import AnimatedLogo from '../effects/AnimatedLogo';
 
@@ -87,6 +87,17 @@ export default function Header({ cartCount = 0, onCartClick }) {
 
             {/* Cart & Mobile Menu */}
             <div className="flex items-center gap-4">
+              {/* Admin Link */}
+              <Link to="/admin-login">
+                <motion.div
+                  className="p-2 text-[#666] hover:text-[#d4af37] transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Settings className="w-4 h-4" />
+                </motion.div>
+              </Link>
+
               <motion.button
                 onClick={onCartClick}
                 className="relative p-2 text-[#f5f5f0] hover:text-[#d4af37] transition-colors"
