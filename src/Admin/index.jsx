@@ -14,7 +14,7 @@ import './i18n/config';
 function ProtectedRoute({ children }) {
   const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
   if (!isAuthenticated) {
-    return <Navigate to="/admin-login" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }
@@ -23,7 +23,8 @@ export default function Admin() {
   return (
     <ThemeProvider>
       <Routes>
-        <Route path="/admin-login" element={<LoginPage />} />
+        {/* Redirect old admin-login to new combined login */}
+        <Route path="/admin-login" element={<Navigate to="/login" replace />} />
         <Route
           path="/admin/*"
           element={

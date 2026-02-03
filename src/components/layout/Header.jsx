@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Settings } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Menu, X, Settings, User, LogOut, LogIn } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import AnimatedLogo from '../effects/AnimatedLogo';
 
 export default function Header({ cartCount = 0, onCartClick }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +20,46 @@ export default function Header({ cartCount = 0, onCartClick }) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Check login status
+  useEffect(() => {
+    const checkAuth = () => {
+      const customerData = sessionStorage.getItem('customerData');
+      if (customerData) {
+        const customer = JSON.parse(customerData);
+        setIsLoggedIn(true);
+        setCustomerName(customer.firstName || 'User');
+      } else {
+        setIsLoggedIn(false);
+        setCustomerName('');
+      }
+    };
+
+    checkAuth();
+    // Check periodically for auth changes
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('customerData');
+    sessionStorage.removeItem('customerAuthenticated');
+    setIsLoggedIn(false);
+    setCustomerName('');
+    setShowUserMenu(false);
+    navigate('/');
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showUserMenu && !e.target.closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showUserMenu]);
 
   const navItems = [
     { label: 'בית', path: 'Home' },
@@ -86,10 +130,66 @@ export default function Header({ cartCount = 0, onCartClick }) {
               ))}
             </nav>
 
-            {/* Cart & Mobile Menu */}
-            <div className="flex items-center gap-4">
+            {/* Cart & User Menu */}
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* User Account */}
+              {isLoggedIn ? (
+                <div className="relative user-menu-container">
+                  <motion.button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 p-2 text-[#f5f5f0] hover:text-[#d4af37] transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-[#d4af37] to-[#cd7f32] rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-[#0d0d0d]" />
+                    </div>
+                    <span className="hidden md:block text-sm">{customerName}</span>
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {showUserMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full left-0 mt-2 w-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl overflow-hidden z-50"
+                        dir="rtl"
+                      >
+                        <Link
+                          to="/account"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-[#f5f5f0] hover:bg-[#2a2a2a] transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          <span>החשבון שלי</span>
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>התנתק</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link to="/login">
+                  <motion.div
+                    className="flex items-center gap-2 px-3 py-2 text-[#f5f5f0] hover:text-[#d4af37] transition-colors rounded-lg hover:bg-[#1a1a1a]/50"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="hidden md:block text-sm">התחבר</span>
+                  </motion.div>
+                </Link>
+              )}
+
               {/* Admin Link */}
-              <Link to="/admin-login">
+              <Link to="/login">
                 <motion.div
                   className="p-2 text-[#666] hover:text-[#d4af37] transition-colors"
                   whileHover={{ scale: 1.1 }}
@@ -168,7 +268,7 @@ export default function Header({ cartCount = 0, onCartClick }) {
                     initial="closed"
                     animate="open"
                   >
-                    <Link 
+                    <Link
                       to={createPageUrl(item.path)}
                       onClick={() => setMenuOpen(false)}
                     >
@@ -178,6 +278,47 @@ export default function Header({ cartCount = 0, onCartClick }) {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Auth Section */}
+                <motion.div
+                  custom={navItems.length}
+                  variants={itemVariants}
+                  initial="closed"
+                  animate="open"
+                  className="pt-8 border-t border-[#2a2a2a]"
+                >
+                  {isLoggedIn ? (
+                    <div className="space-y-4">
+                      <Link
+                        to="/account"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 text-xl text-[#f5f5f0] hover:text-[#d4af37] transition-colors"
+                      >
+                        <User className="w-5 h-5" />
+                        <span>החשבון שלי</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-xl text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        <span>התנתק</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      to="/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 text-xl text-[#d4af37] hover:text-[#f5f5f0] transition-colors"
+                    >
+                      <LogIn className="w-5 h-5" />
+                      <span>התחבר / הירשם</span>
+                    </Link>
+                  )}
+                </motion.div>
               </div>
             </motion.div>
           </>

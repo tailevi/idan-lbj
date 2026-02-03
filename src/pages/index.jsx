@@ -4,6 +4,7 @@ import Gallery from "./Gallery";
 import Contact from "./Contact";
 import About from "./About";
 import Admin from "../Admin";
+import Customer from "../Customer";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -31,12 +32,23 @@ function _getCurrentPage(url) {
 function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
+    const pathname = location.pathname.toLowerCase();
 
     // Check if we're on admin pages (no Layout wrapper needed)
-    const isAdminPage = location.pathname.toLowerCase().startsWith('/admin');
+    const isAdminPage = pathname.startsWith('/admin');
+
+    // Check if we're on customer/auth pages (login, register, account)
+    const isCustomerPage = pathname.startsWith('/login') ||
+                           pathname.startsWith('/register') ||
+                           pathname.startsWith('/account') ||
+                           pathname === '/admin-login';
 
     if (isAdminPage) {
         return <Admin />;
+    }
+
+    if (isCustomerPage) {
+        return <Customer />;
     }
 
     return (
