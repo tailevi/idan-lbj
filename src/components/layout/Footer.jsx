@@ -37,6 +37,7 @@ export default function Footer() {
   const navLinks = [
     { label: 'בית', path: 'Home' },
     { label: 'גלריה', path: 'Gallery' },
+    { label: 'אודות', path: 'About' },
     { label: 'צור קשר', path: 'Contact' }
   ];
 

@@ -82,16 +82,18 @@ export default function AdminSidebar() {
                       to={item.path}
                       end={item.exact}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-base font-medium ${
+                        `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-300 ease-in-out ${
                           isActive
-                            ? 'bg-[#d4af37]/20 text-[#d4af37] border-l-4 border-[#d4af37]'
+                            ? isDark
+                              ? 'bg-[#d4af37]/25 text-[#d4af37] border-l-4 border-[#d4af37] shadow-lg shadow-[#d4af37]/10'
+                              : 'bg-[#d4af37]/20 text-[#b8960c] border-l-4 border-[#d4af37] shadow-md shadow-[#d4af37]/15'
                             : isDark
-                              ? 'text-[#a8a8a8] hover:bg-[#2a2a2a] hover:text-[#f5f5f0]'
-                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              ? 'text-[#a8a8a8] hover:bg-[#2a2a2a]/80 hover:text-[#f5f5f0] hover:translate-x-1 hover:shadow-md'
+                              : 'text-gray-600 hover:bg-gray-200/80 hover:text-gray-900 hover:translate-x-1 hover:shadow-md'
                         }`
                       }
                     >
-                      <item.icon className="w-5 h-5" />
+                      <item.icon className={`w-5 h-5 transition-transform duration-300`} />
                       <span>{item.label}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -107,12 +109,12 @@ export default function AdminSidebar() {
 
         <motion.button
           onClick={() => navigate('/')}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, x: 4 }}
           whileTap={{ scale: 0.98 }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-base font-medium ${
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-base font-medium ${
             isDark
-              ? 'text-[#a8a8a8] hover:bg-[#2a2a2a] hover:text-[#f5f5f0]'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              ? 'text-[#a8a8a8] hover:bg-[#2a2a2a]/80 hover:text-[#f5f5f0] hover:shadow-md'
+              : 'text-gray-600 hover:bg-gray-200/80 hover:text-gray-900 hover:shadow-md'
           }`}
         >
           <Home className="w-5 h-5" />
@@ -121,9 +123,9 @@ export default function AdminSidebar() {
 
         <motion.button
           onClick={handleLogout}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, x: 4 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors text-base font-medium"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/15 hover:shadow-md transition-all duration-300 text-base font-medium"
         >
           <LogOut className="w-5 h-5" />
           <span>{t('sidebar.logout')}</span>

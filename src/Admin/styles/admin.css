@@ -46,6 +46,33 @@
   color: var(--admin-gold) !important;
 }
 
+/* Sidebar Menu Item Hover Animation */
+.admin-container [data-sidebar="menu"] a,
+.admin-container [data-sidebar="menu"] button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-container [data-sidebar="menu"] a:hover,
+.admin-container [data-sidebar="menu"] button:hover {
+  transform: translateX(4px);
+}
+
+[dir="rtl"] .admin-container [data-sidebar="menu"] a:hover,
+[dir="rtl"] .admin-container [data-sidebar="menu"] button:hover {
+  transform: translateX(-4px);
+}
+
+/* Active Menu Item Styling */
+.admin-container [data-sidebar="menu"] a.active {
+  background-color: rgba(212, 175, 55, 0.2);
+  border-left: 4px solid var(--admin-gold);
+}
+
+[dir="rtl"] .admin-container [data-sidebar="menu"] a.active {
+  border-left: none;
+  border-right: 4px solid var(--admin-gold);
+}
+
 /* Admin Card Styles */
 .admin-card {
   background-color: var(--admin-bg-secondary);

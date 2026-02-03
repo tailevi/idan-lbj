@@ -2,6 +2,7 @@ import Layout from "./Layout.jsx";
 import Home from "./Home";
 import Gallery from "./Gallery";
 import Contact from "./Contact";
+import About from "./About";
 import Admin from "../Admin";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
@@ -10,6 +11,7 @@ const PAGES = {
     Home: Home,
     Gallery: Gallery,
     Contact: Contact,
+    About: About,
 }
 
 function _getCurrentPage(url) {
@@ -43,6 +45,7 @@ function PagesContent() {
                 <Route path="/" element={<Home />} />
                 <Route path="/Home" element={<Home />} />
                 <Route path="/Gallery" element={<Gallery />} />
+                <Route path="/About" element={<About />} />
                 <Route path="/Contact" element={<Contact />} />
             </Routes>
         </Layout>

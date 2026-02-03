@@ -1764,17 +1764,26 @@ export default function Gallery() {
         />
       </section>
 
+      {/* Mobile Filter Button & Drawer - Always rendered */}
+      <GalleryFilters
+        filters={filters}
+        onFilterChange={setFilters}
+        isOpen={isFilterOpen}
+        onToggle={() => setIsFilterOpen(!isFilterOpen)}
+      />
+
       {/* Gallery Section */}
       <section className="py-12 pb-32">
         <div className="container mx-auto px-6">
           <div className="flex gap-8">
-            {/* Sidebar Filters - Desktop */}
+            {/* Sidebar Filters - Desktop Only (renders desktop version) */}
             <div className="hidden lg:block w-64 flex-shrink-0">
               <GalleryFilters
                 filters={filters}
                 onFilterChange={setFilters}
                 isOpen={isFilterOpen}
                 onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                desktopOnly
               />
             </div>
 
@@ -1787,8 +1796,11 @@ export default function Gallery() {
                 className="mb-8 bg-[#0d0d0d]/60 backdrop-blur-xl rounded-2xl border border-[#1a1a1a] p-4"
                 dir="rtl"
               >
-                <div className="flex items-center gap-6">
-                  <h4 className="text-[#8b7355] text-sm whitespace-nowrap">טווח מחירים:</h4>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                  <div className="flex items-center justify-between sm:justify-start gap-2">
+                    <h4 className="text-[#8b7355] text-sm whitespace-nowrap">טווח מחירים:</h4>
+                    <span className="text-[#d4af37] text-sm whitespace-nowrap sm:hidden">עד ₪{(filters.maxPrice || 10000).toLocaleString()}</span>
+                  </div>
                   <div className="flex-1 px-2">
                     <Slider
                       defaultValue={[filters.maxPrice || 10000]}
@@ -1796,12 +1808,47 @@ export default function Gallery() {
                       min={500}
                       step={100}
                       onValueChange={(value) => setFilters(prev => ({ ...prev, maxPrice: value[0] }))}
-                      className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-none [&_.relative]:bg-[#2a2a2a] [&_[data-orientation=horizontal]>.bg-primary]:bg-[#d4af37]"
+                      className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-none [&_[role=slider]]:w-5 [&_[role=slider]]:h-5 [&_.relative]:bg-[#2a2a2a] [&_[data-orientation=horizontal]>.bg-primary]:bg-[#d4af37]"
                     />
                   </div>
-                  <span className="text-[#d4af37] text-sm whitespace-nowrap">עד ₪{(filters.maxPrice || 10000).toLocaleString()}</span>
+                  <span className="text-[#d4af37] text-sm whitespace-nowrap hidden sm:block">עד ₪{(filters.maxPrice || 10000).toLocaleString()}</span>
                 </div>
               </motion.div>
+
+              {/* Mobile Active Category Filter */}
+              {filters.category && filters.category !== 'all' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="lg:hidden mb-4 flex items-center gap-2"
+                  dir="rtl"
+                >
+                  <span className="text-[#8b7355] text-sm">מסונן לפי:</span>
+                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#d4af37]/20 text-[#d4af37] text-sm rounded-full border border-[#d4af37]/30">
+                    {filters.category === 'wildlife' && 'חיות'}
+                    {filters.category === 'landscapes' && 'נופים'}
+                    {filters.category === 'Authenticity' && 'אותנטיות'}
+                    {filters.category === 'Drama' && 'דרמה'}
+                    {filters.category === 'Vision' && 'חזון'}
+                    {filters.category === 'Fear' && 'חשש'}
+                    {filters.category === 'Naturalness' && 'טבעיות'}
+                    {filters.category === 'Focus' && 'מיקוד'}
+                    {filters.category === 'Determination' && 'נחישות'}
+                    {filters.category === 'Curiosity' && 'סקרנות'}
+                    {filters.category === 'Power' && 'עוצמה'}
+                    {filters.category === 'Peace' && 'שלווה'}
+                    {filters.category === 'Wholeness' && 'שלמות'}
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, category: 'all' }))}
+                      className="hover:text-white transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                </motion.div>
+              )}
 
               {/* Results Count */}
               <motion.div

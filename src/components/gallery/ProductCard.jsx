@@ -23,6 +23,14 @@ export default function ProductCard({ product, onQuickView, onAddToCart }) {
     Wholeness:'שלמות'
   };
 
+  // Handle tap on mobile to show product
+  const handleCardClick = () => {
+    // On mobile, clicking the card opens the product modal
+    if (window.innerWidth < 768) {
+      onQuickView(product);
+    }
+  };
+
   return (
     <motion.div
       className="group relative"
@@ -34,9 +42,11 @@ export default function ProductCard({ product, onQuickView, onAddToCart }) {
       onHoverEnd={() => setIsHovered(false)}
     >
       <motion.div
-        className="relative overflow-hidden rounded-2xl bg-[#1a1a1a] aspect-[3/4]"
+        className="relative overflow-hidden rounded-2xl bg-[#1a1a1a] aspect-[3/4] cursor-pointer"
         whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         transition={{ duration: 0.4 }}
+        onClick={handleCardClick}
         style={{
           transformStyle: 'preserve-3d',
         }}
@@ -161,9 +171,29 @@ export default function ProductCard({ product, onQuickView, onAddToCart }) {
       </motion.div>
 
       {/* Mobile Info (visible on touch devices) */}
-      <div className="md:hidden mt-3 text-center" dir="rtl">
-        <h3 className="text-[#f5f5f0] text-sm font-medium">{product.title}</h3>
-        <p className="text-[#d4af37] text-sm mt-1">החל מ-₪{product.price?.toLocaleString()}</p>
+      <div className="md:hidden mt-3" dir="rtl">
+        <div className="text-center">
+          <h3 className="text-[#f5f5f0] text-sm font-medium line-clamp-1">{product.title}</h3>
+          <p className="text-[#d4af37] text-sm mt-1">החל מ-₪{product.price?.toLocaleString()}</p>
+        </div>
+        <div className="flex gap-2 mt-3">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onQuickView(product)}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1a1a1a] text-[#f5f5f0] rounded-xl text-sm border border-[#2a2a2a]"
+          >
+            <Eye className="w-4 h-4" />
+            צפה
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onAddToCart(product)}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#d4af37] text-[#0d0d0d] rounded-xl text-sm font-medium"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            הוסף
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );

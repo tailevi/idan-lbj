@@ -134,7 +134,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="relative w-full max-w-5xl max-h-[90vh] overflow-auto bg-[#0d0d0d] rounded-3xl border border-[#1a1a1a]"
+            className="relative w-full max-w-5xl max-h-[95vh] md:max-h-[90vh] overflow-auto bg-[#0d0d0d] rounded-2xl md:rounded-3xl border border-[#1a1a1a] mx-2 md:mx-4"
             onClick={(e) => e.stopPropagation()}
             dir="rtl"
           >
@@ -150,7 +150,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
 
             <div className="grid md:grid-cols-2">
               {/* Image Section */}
-              <div className="relative p-6">
+              <div className="relative p-4 md:p-6">
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#1a1a1a]">
                   <motion.img
                     key={currentImage}
@@ -296,6 +296,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }) 
                               className="relative z-[100]"
                               onMouseEnter={() => setHoveredFrame(i)}
                               onMouseLeave={() => setHoveredFrame(null)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setHoveredFrame(hoveredFrame === i ? null : i);
+                              }}
                             >
                               <HelpCircle className="w-4 h-4 text-[#8b7355] hover:text-[#d4af37] cursor-help transition-colors" />
                               <AnimatePresence>
