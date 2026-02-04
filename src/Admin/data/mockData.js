@@ -12,47 +12,27 @@ export const mockProducts = [
   { id: '10', title: 'Celestial Alignment', titleHe: 'יישור שמימי', price: 9450, categories: ['landscapes', 'Wholeness'], image_url: '/products/Celestial_Alignment_.webp', stock: 2 }
 ];
 
-// Articles mock data
+// Articles mock data - About the photographers
 export const mockArticles = [
   {
     id: '1',
-    title: 'Our Journey',
-    titleHe: 'המסע שלנו',
-    content: 'Our story began with a passion for capturing the raw beauty of nature...',
-    contentHe: 'הסיפור שלנו התחיל עם תשוקה לתפוס את היופי הגולמי של הטבע...',
-    image_url: '/about/journey.webp',
+    title: 'The Artist Behind the Lens',
+    titleHe: 'האמן מאחורי העדשה',
+    content: 'Meet our lead photographer who has spent over two decades capturing the raw beauty of wildlife and nature. His journey started in childhood when he received his first camera as a gift.',
+    contentHe: 'הכירו את הצלם הראשי שלנו שביליה יותר משני עשורים בלכידת היופי הגולמי של חיות הבר והטבע. המסע שלו התחיל בילדותו, כשקיבל את המצלמה הראשונה שלו במתנה. מאז, הוא טייל ליותר מ-50 מדינות, תיעד רגעים נדירים ויצר אמנות שמדברת אל הנשמה. כל תמונה מספרת סיפור של סבלנות, התמדה ואהבה עמוקה לטבע.',
+    image_url: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80',
     order: 1,
     published: true
   },
   {
     id: '2',
-    title: 'The Artist',
-    titleHe: 'האמן',
-    content: 'Behind every photograph is a story waiting to be told...',
-    contentHe: 'מאחורי כל תצלום יש סיפור שמחכה להיות מסופר...',
-    image_url: '/about/artist.webp',
+    title: 'Our Creative Vision',
+    titleHe: 'החזון היצירתי שלנו',
+    content: 'Discover our unique approach to wildlife photography and what drives our passion. We believe that true photography does not just document reality, but reveals the soul hidden within.',
+    contentHe: 'גלו את הגישה הייחודית שלנו לצילום חיות בר ומה מניע את התשוקה שלנו. אנחנו מאמינים שצילום אמיתי לא רק מתעד את המציאות, אלא חושף את הנשמה שמסתתרת בתוכה. הפילוסופיה שלנו מבוססת על כבוד לטבע, סבלנות אינסופית והבנה עמוקה של התנהגות בעלי חיים. כל יציאה לשטח היא הרפתקה חדשה, כל פגישה עם חיית בר היא זכות.',
+    image_url: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800&q=80',
     order: 2,
     published: true
-  },
-  {
-    id: '3',
-    title: 'Our Process',
-    titleHe: 'התהליך שלנו',
-    content: 'From the wild savannas to your living room, each piece undergoes careful curation...',
-    contentHe: 'מהסוואנות הפראיות לסלון שלכם, כל יצירה עוברת אוצרות קפדנית...',
-    image_url: '/about/process.webp',
-    order: 3,
-    published: true
-  },
-  {
-    id: '4',
-    title: 'Quality Promise',
-    titleHe: 'הבטחת איכות',
-    content: 'We use only museum-grade materials to ensure your artwork lasts for generations...',
-    contentHe: 'אנו משתמשים רק בחומרים באיכות מוזיאון כדי להבטיח שהאמנות שלכם תחזיק לדורות...',
-    image_url: '/about/quality.webp',
-    order: 4,
-    published: false
   }
 ];
 

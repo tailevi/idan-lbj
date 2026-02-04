@@ -3,6 +3,7 @@ import Home from "./Home";
 import Gallery from "./Gallery";
 import Contact from "./Contact";
 import About from "./About";
+import Articles from "./Articles";
 import Admin from "../Admin";
 import Customer from "../Customer";
 
@@ -13,6 +14,7 @@ const PAGES = {
     Gallery: Gallery,
     Contact: Contact,
     About: About,
+    Articles: Articles,
 }
 
 function _getCurrentPage(url) {
@@ -58,6 +60,7 @@ function PagesContent() {
                 <Route path="/Home" element={<Home />} />
                 <Route path="/Gallery" element={<Gallery />} />
                 <Route path="/About" element={<About />} />
+                <Route path="/Articles" element={<Articles />} />
                 <Route path="/Contact" element={<Contact />} />
             </Routes>
         </Layout>

@@ -64,6 +64,7 @@ export default function Header({ cartCount = 0, onCartClick }) {
   const navItems = [
     { label: 'בית', path: 'Home' },
     { label: 'גלריה', path: 'Gallery' },
+    { label: 'מאמרים', path: 'Articles' },
     { label: 'אודות', path: 'About' },
     { label: 'צור קשר', path: 'Contact' }
   ];

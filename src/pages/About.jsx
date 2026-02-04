@@ -211,7 +211,7 @@ export default function About() {
               גלו עוד
             </span>
             <h2 className="text-4xl md:text-5xl font-light text-[#f5f5f0] mt-4">
-              מאמרים <span className="text-[#d4af37]">ותוכן</span>
+              עלינו ועל <span className="text-[#d4af37]">היצירות שלנו</span>
             </h2>
             <motion.div
               variants={lineVariants}
