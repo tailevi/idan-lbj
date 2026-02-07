@@ -13,7 +13,7 @@ export default function AdminLayout() {
   return (
     <div
       dir={direction}
-      className={`admin-container ${isDark ? '' : 'light'}`}
+      className={`admin-container ${isDark ? 'dark' : 'light'}`}
     >
       <SidebarProvider>
         <AdminSidebar />

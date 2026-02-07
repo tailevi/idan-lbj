@@ -7,7 +7,6 @@ import {
   Package,
   User,
   Shield,
-  CreditCard,
   LogOut,
   Home,
   Sparkles
@@ -38,8 +37,7 @@ export default function CustomerSidebar() {
     { path: '/account', icon: LayoutDashboard, label: t('sidebar.dashboard'), exact: true },
     { path: '/account/orders', icon: Package, label: t('sidebar.orders') },
     { path: '/account/profile', icon: User, label: t('sidebar.profile') },
-    { path: '/account/security', icon: Shield, label: t('sidebar.security') },
-    { path: '/account/payment', icon: CreditCard, label: t('sidebar.payment') }
+    { path: '/account/security', icon: Shield, label: t('sidebar.security') }
   ];
 
   const handleLogout = () => {

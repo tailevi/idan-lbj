@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts';
 
-export default function ArticleForm({ isOpen, onClose, onSave, article }) {
+export default function ArticleForm({ isOpen, onClose, onSave, article, isSaving }) {
   const { t } = useTranslation();
   const { isDark } = useTheme();
 
@@ -15,7 +15,8 @@ export default function ArticleForm({ isOpen, onClose, onSave, article }) {
     contentHe: '',
     image_url: '',
     order: 1,
-    published: true
+    published: true,
+    slug: ''
   });
   const [errors, setErrors] = useState({});
 
@@ -28,7 +29,8 @@ export default function ArticleForm({ isOpen, onClose, onSave, article }) {
         contentHe: article.contentHe || '',
         image_url: article.image_url || '',
         order: article.order || 1,
-        published: article.published ?? true
+        published: article.published ?? true,
+        slug: article.slug || ''
       });
     } else {
       setFormData({
@@ -38,7 +40,8 @@ export default function ArticleForm({ isOpen, onClose, onSave, article }) {
         contentHe: '',
         image_url: '',
         order: 1,
-        published: true
+        published: true,
+        slug: ''
       });
     }
     setErrors({});
@@ -56,7 +59,7 @@ export default function ArticleForm({ isOpen, onClose, onSave, article }) {
     e.preventDefault();
     if (validateForm()) {
       onSave({
-        id: article?.id || Date.now().toString(),
+        id: article?.id,
         ...formData
       });
     }
@@ -208,16 +211,19 @@ export default function ArticleForm({ isOpen, onClose, onSave, article }) {
                 <button
                   type="button"
                   onClick={onClose}
+                  disabled={isSaving}
                   className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
                     isDark ? 'bg-[#2a2a2a] text-[#f5f5f0] hover:bg-[#3a3a3a]' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
+                  } disabled:opacity-50`}
                 >
                   {t('articles.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl font-bold bg-gradient-to-r from-[#d4af37] to-[#cd7f32] text-[#0d0d0d] hover:opacity-90 transition-opacity"
+                  disabled={isSaving}
+                  className="flex-1 py-3 rounded-xl font-bold bg-gradient-to-r from-[#d4af37] to-[#cd7f32] text-[#0d0d0d] hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                 >
+                  {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                   {t('articles.save')}
                 </button>
               </div>

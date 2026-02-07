@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, ChevronDown, Camera, Sparkles } from 'lucide-react';
+import { publicArticlesApi } from '../services/api';
 
-// Default articles about the photographers
+// Default articles about the photographers (fallback when API is unavailable)
 const defaultArticles = [
   {
     id: 'photographer-1',
@@ -27,21 +28,24 @@ const defaultArticles = [
 ];
 
 export default function Articles() {
-  const [articles, setArticles] = useState([]);
+  const [articles, setArticles] = useState(defaultArticles);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Load articles from localStorage (same source as admin panel) or use defaults
-    const savedArticles = localStorage.getItem('adminArticles');
-    if (savedArticles) {
-      const parsed = JSON.parse(savedArticles);
-      const publishedArticles = parsed.filter(a => a.published !== false);
-      // Take only first 2 articles for this page
-      setArticles(publishedArticles.length > 0 ? publishedArticles.slice(0, 2) : defaultArticles);
-    } else {
-      setArticles(defaultArticles);
+    let cancelled = false;
+    async function fetchArticles() {
+      try {
+        const publishedArticles = await publicArticlesApi.getPublished(0, 10);
+        if (!cancelled && publishedArticles.length > 0) {
+          setArticles(publishedArticles);
+        }
+      } catch (err) {
+        // Keep defaults if API is unreachable
+      }
+      if (!cancelled) setIsLoaded(true);
     }
-    setIsLoaded(true);
+    fetchArticles();
+    return () => { cancelled = true; };
   }, []);
 
   const containerVariants = {
@@ -202,183 +206,190 @@ export default function Articles() {
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
+          {articles.length > 0 && (
           <motion.div
+            key={articles.map(a => a.id).join(',')}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={containerVariants}
             className="space-y-32"
           >
-            {articles.sort((a, b) => (a.order || 0) - (b.order || 0)).map((article, index) => (
-              <motion.article
-                key={article.id}
-                variants={itemVariants}
-                className="relative"
-              >
-                <div className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
-                  index % 2 === 1 ? 'lg:grid-flow-dense' : ''
-                }`}>
-                  {/* Image Section */}
-                  <motion.div
-                    className={`relative group ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {/* Image Container */}
-                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                      {/* Shimmer Effect on Hover */}
+            {[...articles].sort((a, b) => (a.order || 0) - (b.order || 0)).map((article, index) => {
+              const imageUrl = article.image_url || article.coverImage || 'https://via.placeholder.com/800x600?text=Article+Image';
+
+              return (
+                <motion.article
+                  key={article.id}
+                  variants={itemVariants}
+                  className="relative"
+                >
+                  <div className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+                    index % 2 === 1 ? 'lg:grid-flow-dense' : ''
+                  }`}>
+                    {/* Image Section */}
+                    <motion.div
+                      className={`relative group ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      {/* Image Container */}
+                      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                        {/* Shimmer Effect on Hover */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"
+                        />
+
+                        <motion.img
+                          src={imageUrl}
+                          alt={article.titleHe || article.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          variants={imageVariants}
+                          initial="hidden"
+                          whileInView="visible"
+                          viewport={{ once: true }}
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/800x600?text=Article+Image';
+                          }}
+                        />
+
+                        {/* Overlay Gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0d]/70 via-transparent to-transparent" />
+
+                        {/* Floating Camera Icon */}
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.5, duration: 0.5 }}
+                          className="absolute bottom-4 right-4 p-3 bg-[#0d0d0d]/80 backdrop-blur-sm rounded-xl border border-[#d4af37]/30"
+                        >
+                          <Camera className="w-5 h-5 text-[#d4af37]" />
+                        </motion.div>
+                      </div>
+
+                      {/* Decorative Corners */}
                       <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10"
-                      />
-
-                      <motion.img
-                        src={article.image_url || 'https://via.placeholder.com/800x600?text=Article+Image'}
-                        alt={article.titleHe || article.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        variants={imageVariants}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/800x600?text=Article+Image';
-                        }}
-                      />
-
-                      {/* Overlay Gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0d]/70 via-transparent to-transparent" />
-
-                      {/* Floating Camera Icon */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0 }}
+                        initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
-                        className="absolute bottom-4 right-4 p-3 bg-[#0d0d0d]/80 backdrop-blur-sm rounded-xl border border-[#d4af37]/30"
+                        transition={{ delay: 0.3 }}
+                        className={`absolute -top-4 ${index % 2 === 0 ? '-right-4' : '-left-4'} w-20 h-20`}
                       >
-                        <Camera className="w-5 h-5 text-[#d4af37]" />
+                        <div className={`absolute top-0 ${index % 2 === 0 ? 'right-0' : 'left-0'} w-full h-[2px] bg-gradient-to-${index % 2 === 0 ? 'l' : 'r'} from-[#d4af37] to-transparent`} />
+                        <div className={`absolute top-0 ${index % 2 === 0 ? 'right-0' : 'left-0'} w-[2px] h-full bg-gradient-to-b from-[#d4af37] to-transparent`} />
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4 }}
+                        className={`absolute -bottom-4 ${index % 2 === 0 ? '-left-4' : '-right-4'} w-20 h-20`}
+                      >
+                        <div className={`absolute bottom-0 ${index % 2 === 0 ? 'left-0' : 'right-0'} w-full h-[2px] bg-gradient-to-${index % 2 === 0 ? 'r' : 'l'} from-[#d4af37] to-transparent`} />
+                        <div className={`absolute bottom-0 ${index % 2 === 0 ? 'left-0' : 'right-0'} w-[2px] h-full bg-gradient-to-t from-[#d4af37] to-transparent`} />
+                      </motion.div>
+
+                      {/* Article Number */}
+                      <motion.div
+                        initial={{ opacity: 0, x: index % 2 === 0 ? 20 : -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5 }}
+                        className={`absolute -bottom-8 ${index % 2 === 0 ? 'right-8' : 'left-8'} bg-[#1a1a1a] border border-[#d4af37]/30 rounded-xl px-6 py-4 shadow-2xl`}
+                      >
+                        <span className="text-[#d4af37]/40 text-sm">מאמר</span>
+                        <p className="text-[#d4af37] text-4xl font-light">0{index + 1}</p>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Content Section */}
+                    <div className={`space-y-6 ${index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
+                      {/* Sparkle Icon */}
+                      <motion.div
+                        initial={{ opacity: 0, rotate: -180 }}
+                        whileInView={{ opacity: 1, rotate: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2, duration: 0.6 }}
+                        className="inline-flex items-center gap-2 text-[#d4af37]/60"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span className="text-sm tracking-wider">סיפור אישי</span>
+                      </motion.div>
+
+                      {/* Title */}
+                      <motion.h2
+                        initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                        className="text-3xl md:text-5xl font-light text-[#f5f5f0] leading-tight"
+                      >
+                        {article.titleHe || article.title}
+                      </motion.h2>
+
+                      {/* Decorative Line */}
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4, duration: 0.8 }}
+                        className={`h-[2px] w-20 bg-gradient-to-${index % 2 === 0 ? 'l' : 'r'} from-[#d4af37] to-transparent origin-${index % 2 === 0 ? 'right' : 'left'}`}
+                      />
+
+                      {/* Content */}
+                      <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                        className="text-[#a8a8a8] text-lg leading-relaxed"
+                      >
+                        {article.contentHe || article.content}
+                      </motion.p>
+
+                      {/* Read More Button */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.6, duration: 0.6 }}
+                      >
+                        <motion.button
+                          whileHover={{ scale: 1.05, x: -5 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="group flex items-center gap-3 text-[#d4af37] hover:text-[#f5f5f0] transition-colors"
+                        >
+                          <span className="text-sm tracking-wider">קראו עוד</span>
+                          <svg
+                            className="w-5 h-5 rotate-180 group-hover:-translate-x-1 transition-transform"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </motion.button>
                       </motion.div>
                     </div>
-
-                    {/* Decorative Corners */}
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.3 }}
-                      className={`absolute -top-4 ${index % 2 === 0 ? '-right-4' : '-left-4'} w-20 h-20`}
-                    >
-                      <div className={`absolute top-0 ${index % 2 === 0 ? 'right-0' : 'left-0'} w-full h-[2px] bg-gradient-to-${index % 2 === 0 ? 'l' : 'r'} from-[#d4af37] to-transparent`} />
-                      <div className={`absolute top-0 ${index % 2 === 0 ? 'right-0' : 'left-0'} w-[2px] h-full bg-gradient-to-b from-[#d4af37] to-transparent`} />
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.4 }}
-                      className={`absolute -bottom-4 ${index % 2 === 0 ? '-left-4' : '-right-4'} w-20 h-20`}
-                    >
-                      <div className={`absolute bottom-0 ${index % 2 === 0 ? 'left-0' : 'right-0'} w-full h-[2px] bg-gradient-to-${index % 2 === 0 ? 'r' : 'l'} from-[#d4af37] to-transparent`} />
-                      <div className={`absolute bottom-0 ${index % 2 === 0 ? 'left-0' : 'right-0'} w-[2px] h-full bg-gradient-to-t from-[#d4af37] to-transparent`} />
-                    </motion.div>
-
-                    {/* Article Number */}
-                    <motion.div
-                      initial={{ opacity: 0, x: index % 2 === 0 ? 20 : -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5 }}
-                      className={`absolute -bottom-8 ${index % 2 === 0 ? 'right-8' : 'left-8'} bg-[#1a1a1a] border border-[#d4af37]/30 rounded-xl px-6 py-4 shadow-2xl`}
-                    >
-                      <span className="text-[#d4af37]/40 text-sm">מאמר</span>
-                      <p className="text-[#d4af37] text-4xl font-light">0{index + 1}</p>
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Content Section */}
-                  <div className={`space-y-6 ${index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
-                    {/* Sparkle Icon */}
-                    <motion.div
-                      initial={{ opacity: 0, rotate: -180 }}
-                      whileInView={{ opacity: 1, rotate: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.2, duration: 0.6 }}
-                      className="inline-flex items-center gap-2 text-[#d4af37]/60"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      <span className="text-sm tracking-wider">סיפור אישי</span>
-                    </motion.div>
-
-                    {/* Title */}
-                    <motion.h2
-                      initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.3, duration: 0.6 }}
-                      className="text-3xl md:text-5xl font-light text-[#f5f5f0] leading-tight"
-                    >
-                      {article.titleHe || article.title}
-                    </motion.h2>
-
-                    {/* Decorative Line */}
-                    <motion.div
-                      initial={{ scaleX: 0 }}
-                      whileInView={{ scaleX: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.4, duration: 0.8 }}
-                      className={`h-[2px] w-20 bg-gradient-to-${index % 2 === 0 ? 'l' : 'r'} from-[#d4af37] to-transparent origin-${index % 2 === 0 ? 'right' : 'left'}`}
-                    />
-
-                    {/* Content */}
-                    <motion.p
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5, duration: 0.6 }}
-                      className="text-[#a8a8a8] text-lg leading-relaxed"
-                    >
-                      {article.contentHe || article.content}
-                    </motion.p>
-
-                    {/* Read More Button */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.6, duration: 0.6 }}
-                    >
-                      <motion.button
-                        whileHover={{ scale: 1.05, x: -5 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="group flex items-center gap-3 text-[#d4af37] hover:text-[#f5f5f0] transition-colors"
-                      >
-                        <span className="text-sm tracking-wider">קראו עוד</span>
-                        <svg
-                          className="w-5 h-5 rotate-180 group-hover:-translate-x-1 transition-transform"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </motion.button>
-                    </motion.div>
                   </div>
-                </div>
 
-                {/* Separator between articles */}
-                {index < articles.length - 1 && (
-                  <motion.div
-                    initial={{ opacity: 0, scaleX: 0 }}
-                    whileInView={{ opacity: 1, scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2, duration: 1 }}
-                    className="mt-32 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent"
-                  />
-                )}
-              </motion.article>
-            ))}
+                  {/* Separator between articles */}
+                  {index < articles.length - 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, scaleX: 0 }}
+                      whileInView={{ opacity: 1, scaleX: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.2, duration: 1 }}
+                      className="mt-32 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent"
+                    />
+                  )}
+                </motion.article>
+              );
+            })}
           </motion.div>
+          )}
 
           {/* Empty State if no articles */}
           {articles.length === 0 && isLoaded && (

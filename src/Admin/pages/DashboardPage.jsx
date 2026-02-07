@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+    const isAuthenticated = localStorage.getItem('adminAuthenticated');
     if (!isAuthenticated) {
       navigate('/admin-login');
     }

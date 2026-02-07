@@ -9,11 +9,13 @@ import ArticlesPage from './pages/ArticlesPage';
 import ReviewsPage from './pages/ReviewsPage';
 import UsersPage from './pages/UsersPage';
 import OrdersPage from './pages/OrdersPage';
+import { getToken } from '../services/api';
 import './i18n/config';
 
 function ProtectedRoute({ children }) {
-  const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
-  if (!isAuthenticated) {
+  const isAuthenticated = localStorage.getItem('adminAuthenticated');
+  const hasToken = getToken();
+  if (!isAuthenticated && !hasToken) {
     return <Navigate to="/login" replace />;
   }
   return children;

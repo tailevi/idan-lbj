@@ -11,7 +11,7 @@ export default function CustomerLayout() {
   const { direction } = useDirection();
 
   return (
-    <div dir={direction} className={`customer-container min-h-screen ${isDark ? '' : 'light'}`}>
+    <div dir={direction} className={`customer-container min-h-screen ${isDark ? 'dark' : 'light'}`}>
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <CustomerSidebar />

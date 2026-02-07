@@ -24,7 +24,7 @@ export default function Header({ cartCount = 0, onCartClick }) {
   // Check login status
   useEffect(() => {
     const checkAuth = () => {
-      const customerData = sessionStorage.getItem('customerData');
+      const customerData = localStorage.getItem('customerData');
       if (customerData) {
         const customer = JSON.parse(customerData);
         setIsLoggedIn(true);
@@ -42,8 +42,9 @@ export default function Header({ cartCount = 0, onCartClick }) {
   }, []);
 
   const handleLogout = () => {
-    sessionStorage.removeItem('customerData');
-    sessionStorage.removeItem('customerAuthenticated');
+    localStorage.removeItem('customerData');
+    localStorage.removeItem('customerAuthenticated');
+    localStorage.removeItem('adminToken');
     setIsLoggedIn(false);
     setCustomerName('');
     setShowUserMenu(false);
@@ -189,8 +190,8 @@ export default function Header({ cartCount = 0, onCartClick }) {
                 </Link>
               )}
 
-              {/* Admin Link */}
-              <Link to="/login">
+              {/* User Panel / Login Link */}
+              <Link to={isLoggedIn ? "/account" : "/login"}>
                 <motion.div
                   className="p-2 text-[#666] hover:text-[#d4af37] transition-colors"
                   whileHover={{ scale: 1.1 }}

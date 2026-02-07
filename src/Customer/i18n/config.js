@@ -18,6 +18,10 @@ if (!i18n.isInitialized) {
         escapeValue: false
       }
     });
+} else {
+  // Merge customer translations into already-initialized i18n
+  i18n.addResourceBundle('en', 'translation', en, true, true);
+  i18n.addResourceBundle('he', 'translation', he, true, true);
 }
 
 export default i18n;

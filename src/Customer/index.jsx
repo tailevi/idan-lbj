@@ -8,7 +8,6 @@ import DashboardPage from './pages/DashboardPage';
 import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import SecurityPage from './pages/SecurityPage';
-import PaymentPage from './pages/PaymentPage';
 import './i18n/config';
 
 function ProtectedRoute({ children }) {
@@ -47,7 +46,6 @@ function CustomerRoutes() {
         <Route path="orders" element={<OrdersPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="security" element={<SecurityPage />} />
-        <Route path="payment" element={<PaymentPage />} />
       </Route>
     </Routes>
   );

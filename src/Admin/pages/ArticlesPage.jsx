@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import AdminHeader from '../layouts/AdminHeader';
 import SearchInput from '../components/common/SearchInput';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import ArticleList from '../components/articles/ArticleList';
 import ArticleForm from '../components/articles/ArticleForm';
 import { useTheme } from '../contexts';
-import { mockArticles } from '../data/mockData';
+import { articlesApi } from '../../services/api';
 
 export default function ArticlesPage() {
   const { t, i18n } = useTranslation();
@@ -22,19 +22,39 @@ export default function ArticlesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
   const [deleteArticle, setDeleteArticle] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchArticles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      const data = await articlesApi.getAll();
+      setArticles(data.articles);
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) {
+        navigate('/login');
+        return;
+      }
+      setError(err.message || 'Failed to load articles');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate]);
 
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+    const isAuthenticated = localStorage.getItem('adminAuthenticated');
     if (!isAuthenticated) {
-      navigate('/admin-login');
+      navigate('/login');
       return;
     }
-    const savedArticles = JSON.parse(localStorage.getItem('adminArticles') || 'null');
-    setArticles(savedArticles || mockArticles);
-  }, [navigate]);
+    fetchArticles();
+  }, [navigate, fetchArticles]);
 
   const filteredArticles = articles
     .filter(article => {
+      if (!searchQuery) return true;
       const searchLower = searchQuery.toLowerCase();
       return (
         article.title.toLowerCase().includes(searchLower) ||
@@ -43,26 +63,38 @@ export default function ArticlesPage() {
         (article.contentHe && article.contentHe.includes(searchQuery))
       );
     })
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const handleSaveArticle = (articleData) => {
-    let updatedArticles;
-    if (editingArticle) {
-      updatedArticles = articles.map(a => a.id === articleData.id ? articleData : a);
-    } else {
-      updatedArticles = [...articles, articleData];
+  const handleSaveArticle = async (articleData) => {
+    try {
+      setIsSaving(true);
+      setError('');
+      if (editingArticle) {
+        const updated = await articlesApi.update(articleData.id, articleData);
+        setArticles(prev => prev.map(a => a.id === updated.id ? updated : a));
+      } else {
+        const created = await articlesApi.create(articleData);
+        setArticles(prev => [...prev, created]);
+      }
+      setIsFormOpen(false);
+      setEditingArticle(null);
+    } catch (err) {
+      setError(err.message || 'Failed to save article');
+    } finally {
+      setIsSaving(false);
     }
-    setArticles(updatedArticles);
-    localStorage.setItem('adminArticles', JSON.stringify(updatedArticles));
-    setIsFormOpen(false);
-    setEditingArticle(null);
   };
 
-  const handleDeleteConfirm = () => {
-    const updatedArticles = articles.filter(a => a.id !== deleteArticle.id);
-    setArticles(updatedArticles);
-    localStorage.setItem('adminArticles', JSON.stringify(updatedArticles));
-    setDeleteArticle(null);
+  const handleDeleteConfirm = async () => {
+    try {
+      setError('');
+      await articlesApi.delete(deleteArticle.id);
+      setArticles(prev => prev.filter(a => a.id !== deleteArticle.id));
+      setDeleteArticle(null);
+    } catch (err) {
+      setError(err.message || 'Failed to delete article');
+      setDeleteArticle(null);
+    }
   };
 
   const handleEdit = (article) => {
@@ -80,6 +112,24 @@ export default function ArticlesPage() {
           animate={{ opacity: 1 }}
           className="space-y-6"
         >
+          {/* Error Banner */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-3 rounded-xl"
+            >
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <span>{error}</span>
+              <button
+                onClick={() => setError('')}
+                className="ml-auto text-red-400 hover:text-red-300"
+              >
+                &times;
+              </button>
+            </motion.div>
+          )}
+
           {/* Actions Bar */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="w-full sm:w-80">
@@ -103,12 +153,18 @@ export default function ArticlesPage() {
             </motion.button>
           </div>
 
-          {/* Articles List */}
-          <ArticleList
-            articles={filteredArticles}
-            onEdit={handleEdit}
-            onDelete={setDeleteArticle}
-          />
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-[#d4af37]' : 'text-amber-600'}`} />
+            </div>
+          ) : (
+            <ArticleList
+              articles={filteredArticles}
+              onEdit={handleEdit}
+              onDelete={setDeleteArticle}
+            />
+          )}
         </motion.div>
       </div>
 
@@ -121,6 +177,7 @@ export default function ArticlesPage() {
         }}
         onSave={handleSaveArticle}
         article={editingArticle}
+        isSaving={isSaving}
       />
 
       {/* Delete Confirmation */}

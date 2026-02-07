@@ -4,22 +4,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Sparkles } from 'lucide-react';
 import { useDirection } from '../hooks';
-import { useAuth, useTheme } from '../contexts';
+import { useTheme } from '../contexts';
 import LanguageToggle from '../components/common/LanguageToggle';
 import ThemeToggle from '../components/common/ThemeToggle';
+import { authApi, setToken } from '../../services/api';
 import '../i18n/config';
-
-// Admin credentials
-const ADMIN_CREDENTIALS = {
-  username: 'IdanAdminLBJ',
-  password: 'LBJadminIdan'
-};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { direction, isRTL } = useDirection();
-  const { login } = useAuth();
   const { isDark } = useTheme();
 
   const [email, setEmail] = useState('');
@@ -28,29 +22,37 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      // Check if admin credentials
-      if (email === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-        sessionStorage.setItem('adminAuthenticated', 'true');
+    try {
+      const response = await authApi.login(email, password);
+
+      if (response.role === 'ADMIN') {
+        setToken(response.token);
+        localStorage.setItem('adminAuthenticated', 'true');
         navigate('/admin');
-        setIsLoading(false);
         return;
       }
 
-      // Try customer login
-      const result = login(email, password);
-      if (result.success) {
-        navigate('/account');
-      } else {
-        setError(t('login.invalidCredentials'));
-      }
+      // Non-admin user - store token and profile data
+      setToken(response.token);
+      localStorage.setItem('customerAuthenticated', 'true');
+      localStorage.setItem('customerData', JSON.stringify({
+        id: response.username,
+        email: response.email || email,
+        firstName: response.firstName || '',
+        lastName: response.lastName || '',
+        phone: response.phone || '',
+      }));
+      navigate('/account');
+    } catch (err) {
+      setError(t('login.invalidCredentials'));
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (

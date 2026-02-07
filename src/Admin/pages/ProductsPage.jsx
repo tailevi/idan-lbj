@@ -24,7 +24,7 @@ export default function ProductsPage() {
   const [deleteProduct, setDeleteProduct] = useState(null);
 
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+    const isAuthenticated = localStorage.getItem('adminAuthenticated');
     if (!isAuthenticated) {
       navigate('/admin-login');
       return;

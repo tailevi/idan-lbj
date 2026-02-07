@@ -4,16 +4,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Sparkles, User, Phone } from 'lucide-react';
 import { useDirection } from '../hooks';
-import { useAuth, useTheme } from '../contexts';
+import { useTheme } from '../contexts';
 import LanguageToggle from '../components/common/LanguageToggle';
 import ThemeToggle from '../components/common/ThemeToggle';
+import { authApi, setToken } from '../../services/api';
 import '../i18n/config';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { direction, isRTL } = useDirection();
-  const { register } = useAuth();
   const { isDark } = useTheme();
 
   const [formData, setFormData] = useState({
@@ -49,7 +49,7 @@ export default function RegisterPage() {
     }
     if (!formData.password) {
       newErrors.password = t('register.required');
-    } else if (formData.password.length < 4) {
+    } else if (formData.password.length < 6) {
       newErrors.password = t('register.passwordTooShort');
     }
     if (formData.password !== formData.confirmPassword) {
@@ -60,7 +60,7 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setGeneralError('');
 
@@ -68,26 +68,36 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      const result = register({
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone
-      });
+    try {
+      const response = await authApi.register(
+        formData.email,
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName,
+        formData.phone
+      );
 
-      if (result.success) {
-        navigate('/account');
+      setToken(response.token);
+      localStorage.setItem('customerAuthenticated', 'true');
+      localStorage.setItem('customerData', JSON.stringify({
+        id: response.username,
+        email: response.email || formData.email,
+        firstName: response.firstName || formData.firstName,
+        lastName: response.lastName || formData.lastName,
+        phone: response.phone || formData.phone,
+      }));
+      navigate('/account');
+    } catch (err) {
+      const msg = err.message || '';
+      if (msg.toLowerCase().includes('already exists')) {
+        setGeneralError(t('register.emailExists'));
       } else {
-        if (result.error === 'Email already exists') {
-          setGeneralError(t('register.emailExists'));
-        } else {
-          setGeneralError(result.error);
-        }
+        setGeneralError(msg || t('register.error'));
       }
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const handleChange = (field, value) => {

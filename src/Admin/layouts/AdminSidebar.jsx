@@ -44,8 +44,9 @@ export default function AdminSidebar() {
   ];
 
   const handleLogout = () => {
-    sessionStorage.removeItem('adminAuthenticated');
-    navigate('/admin-login');
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('adminToken');
+    navigate('/login');
   };
 
   return (

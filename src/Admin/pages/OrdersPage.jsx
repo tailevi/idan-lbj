@@ -21,7 +21,7 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+    const isAuthenticated = localStorage.getItem('adminAuthenticated');
     if (!isAuthenticated) {
       navigate('/admin-login');
       return;
