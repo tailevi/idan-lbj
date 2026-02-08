@@ -148,3 +148,43 @@ export const publicArticlesApi = {
     return (data.content || []).map(mapArticleFromBackend);
   },
 };
+
+// User Management API (admin only)
+export const usersApi = {
+  getAll: async (page = 0, size = 20) => {
+    const data = await apiRequest(`/api/admin/users?page=${page}&size=${size}&sort=createdAt,desc`);
+    return {
+      users: data.content || [],
+      totalPages: data.totalPages || 0,
+      totalElements: data.totalElements || 0,
+    };
+  },
+
+  getById: (id) =>
+    apiRequest(`/api/admin/users/${id}`),
+
+  getByUsername: (username) =>
+    apiRequest(`/api/admin/users/username/${username}`),
+
+  create: (userData) =>
+    apiRequest('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    }),
+
+  update: (id, userData) =>
+    apiRequest(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    }),
+
+  toggleEnabled: (id) =>
+    apiRequest(`/api/admin/users/${id}/toggle-enabled`, {
+      method: 'PATCH',
+    }),
+
+  delete: (id) =>
+    apiRequest(`/api/admin/users/${id}`, {
+      method: 'DELETE',
+    }),
+};

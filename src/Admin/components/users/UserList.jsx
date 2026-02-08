@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Users, Mail, Phone } from 'lucide-react';
+import { Edit2, Trash2, Users, Mail, Shield, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts';
 import DataTable from '../common/DataTable';
 
-export default function UserList({ users, onViewDetails }) {
+export default function UserList({ users, onEdit, onDelete, onToggleEnabled }) {
   const { t } = useTranslation();
   const { isDark } = useTheme();
 
@@ -20,21 +20,19 @@ export default function UserList({ users, onViewDetails }) {
 
   const columns = [
     {
-      key: 'name',
-      label: t('users.name'),
+      key: 'username',
+      label: t('users.username'),
       sortable: true,
-      render: (_, user) => (
+      render: (username) => (
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm ${
             isDark ? 'bg-[#2a2a2a] text-[#d4af37]' : 'bg-amber-100 text-amber-600'
           }`}>
-            {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+            {username ? username.charAt(0).toUpperCase() : '?'}
           </div>
-          <div>
-            <p className={`font-medium ${isDark ? 'text-[#f5f5f0]' : 'text-gray-900'}`}>
-              {user.firstName} {user.lastName}
-            </p>
-          </div>
+          <span className={`font-medium ${isDark ? 'text-[#f5f5f0]' : 'text-gray-900'}`}>
+            {username}
+          </span>
         </div>
       )
     },
@@ -50,32 +48,56 @@ export default function UserList({ users, onViewDetails }) {
       )
     },
     {
-      key: 'phone',
-      label: t('users.phone'),
-      render: (phone) => (
+      key: 'role',
+      label: t('users.role'),
+      sortable: true,
+      render: (role) => (
         <div className="flex items-center gap-2">
-          <Phone className={`w-4 h-4 ${isDark ? 'text-[#666]' : 'text-gray-400'}`} />
-          <span dir="ltr">{phone}</span>
+          <Shield className={`w-4 h-4 ${role === 'ADMIN' ? 'text-[#d4af37]' : isDark ? 'text-[#666]' : 'text-gray-400'}`} />
+          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
+            role === 'ADMIN'
+              ? 'bg-[#d4af37]/20 text-[#d4af37]'
+              : isDark ? 'bg-[#2a2a2a] text-[#a8a8a8]' : 'bg-gray-100 text-gray-600'
+          }`}>
+            {role === 'ADMIN' ? t('users.roleAdmin') : t('users.roleUser')}
+          </span>
         </div>
       )
     },
     {
-      key: 'totalOrders',
-      label: t('users.totalOrders'),
-      sortable: true,
-      render: (value) => (
-        <span className={`px-2 py-1 rounded-lg ${isDark ? 'bg-[#2a2a2a]' : 'bg-gray-100'}`}>
-          {value}
-        </span>
+      key: 'enabled',
+      label: t('users.status'),
+      render: (enabled, user) => (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleEnabled(user);
+          }}
+          className="flex items-center gap-2"
+          title={t('users.toggleEnabled')}
+        >
+          {enabled ? (
+            <ToggleRight className="w-6 h-6 text-green-500" />
+          ) : (
+            <ToggleLeft className={`w-6 h-6 ${isDark ? 'text-[#666]' : 'text-gray-400'}`} />
+          )}
+          <span className={`text-xs font-medium ${
+            enabled ? 'text-green-500' : isDark ? 'text-[#666]' : 'text-gray-400'
+          }`}>
+            {enabled ? t('users.enabled') : t('users.disabled')}
+          </span>
+        </motion.button>
       )
     },
     {
-      key: 'totalSpent',
-      label: t('users.totalSpent'),
+      key: 'createdAt',
+      label: t('users.createdAt'),
       sortable: true,
       render: (value) => (
-        <span className="text-[#d4af37] font-semibold">
-          ₪{value.toLocaleString()}
+        <span className={isDark ? 'text-[#a8a8a8]' : 'text-gray-500'}>
+          {value ? new Date(value).toLocaleDateString() : '-'}
         </span>
       )
     },
@@ -83,17 +105,36 @@ export default function UserList({ users, onViewDetails }) {
       key: 'actions',
       label: '',
       render: (_, user) => (
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => onViewDetails(user)}
-          className={`p-2 rounded-lg transition-colors ${
-            isDark ? 'hover:bg-[#2a2a2a] text-[#d4af37]' : 'hover:bg-gray-100 text-amber-600'
-          }`}
-          title={t('users.viewDetails')}
-        >
-          <Eye className="w-5 h-5" />
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(user);
+            }}
+            className={`p-2 rounded-lg transition-colors ${
+              isDark ? 'hover:bg-[#2a2a2a] text-[#d4af37]' : 'hover:bg-gray-100 text-amber-600'
+            }`}
+            title={t('common.edit')}
+          >
+            <Edit2 className="w-4 h-4" />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(user);
+            }}
+            className={`p-2 rounded-lg transition-colors ${
+              isDark ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-50 text-red-500'
+            }`}
+            title={t('common.delete')}
+          >
+            <Trash2 className="w-4 h-4" />
+          </motion.button>
+        </div>
       )
     }
   ];
@@ -102,7 +143,6 @@ export default function UserList({ users, onViewDetails }) {
     <DataTable
       columns={columns}
       data={users}
-      onRowClick={onViewDetails}
     />
   );
 }
