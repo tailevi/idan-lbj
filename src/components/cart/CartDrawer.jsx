@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function CartDrawer({ 
-  isOpen, 
-  onClose, 
-  items = [], 
-  onUpdateQuantity, 
-  onRemoveItem 
+export default function CartDrawer({
+  isOpen,
+  onClose,
+  items = [],
+  onUpdateQuantity,
+  onRemoveItem,
+  onCheckout
 }) {
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -178,6 +179,7 @@ export default function CartDrawer({
                 </div>
 
                 <Button
+                  onClick={onCheckout}
                   className="w-full bg-gradient-to-r from-[#d4af37] to-[#cd7f32] text-[#0d0d0d] font-medium py-6 rounded-xl hover:opacity-90 transition-opacity"
                 >
                   <motion.span

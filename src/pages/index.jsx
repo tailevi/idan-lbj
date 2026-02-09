@@ -4,6 +4,7 @@ import Gallery from "./Gallery";
 import Contact from "./Contact";
 import About from "./About";
 import Articles from "./Articles";
+import Checkout from "./Checkout";
 import Admin from "../Admin";
 import Customer from "../Customer";
 
@@ -62,6 +63,7 @@ function PagesContent() {
                 <Route path="/About" element={<About />} />
                 <Route path="/Articles" element={<Articles />} />
                 <Route path="/Contact" element={<Contact />} />
+                <Route path="/Checkout" element={<Checkout />} />
             </Routes>
         </Layout>
     );

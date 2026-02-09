@@ -1,13 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
 import ClickRipple from '@/components/effects/ClickRipple';
 
 export default function Layout({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cartItems');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Persist cart to localStorage
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   // Listen for add to cart events
   useEffect(() => {
@@ -131,6 +143,10 @@ export default function Layout({ children }) {
         items={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
+        onCheckout={() => {
+          setIsCartOpen(false);
+          navigate('/Checkout');
+        }}
       />
     </div>
   );
