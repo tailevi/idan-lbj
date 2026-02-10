@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
+import { getAdminAuth } from '../../utils/cookies';
 import AdminHeader from '../layouts/AdminHeader';
 import SearchInput from '../components/common/SearchInput';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -43,7 +44,7 @@ export default function UsersPage() {
   }, [navigate]);
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuthenticated');
+    const isAuthenticated = getAdminAuth();
     if (!isAuthenticated) {
       navigate('/login');
       return;

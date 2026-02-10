@@ -4,6 +4,7 @@ import { ArrowRight, CreditCard, Banknote, Smartphone, Trash2, ShoppingBag, Chec
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { getCartItems, setCartItems as setCartCookie, clearCartItems } from '@/utils/cookies';
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -22,10 +23,7 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('cartItems');
-      if (saved) setCartItems(JSON.parse(saved));
-    } catch { /* empty */ }
+    setCartItems(getCartItems());
   }, []);
 
   const handleChange = (field, value) => {
@@ -37,7 +35,7 @@ export default function Checkout() {
       !(i.product_id === item.product_id && i.size === item.size)
     );
     setCartItems(updated);
-    localStorage.setItem('cartItems', JSON.stringify(updated));
+    setCartCookie(updated);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -53,7 +51,7 @@ export default function Checkout() {
 
     console.log('Order submitted:', { items: cartItems, ...formData, total });
 
-    localStorage.setItem('cartItems', JSON.stringify([]));
+    clearCartItems();
     setIsSubmitting(false);
     setIsSuccess(true);
   };

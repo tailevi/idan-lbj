@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Sparkles, User, Phone } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { useDirection } from '../hooks';
 import { useTheme } from '../contexts';
 import LanguageToggle from '../components/common/LanguageToggle';
 import ThemeToggle from '../components/common/ThemeToggle';
 import { authApi, setToken } from '../../services/api';
+import { setCustomerAuth, setCustomerData } from '../../utils/cookies';
 import '../i18n/config';
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || 'YOUR_RECAPTCHA_SITE_KEY';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -29,6 +33,8 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const recaptchaRef = useRef(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -55,6 +61,9 @@ export default function RegisterPage() {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = t('register.passwordMismatch');
     }
+    if (!recaptchaToken) {
+      newErrors.recaptcha = t('register.recaptchaRequired', 'Please verify you are not a robot');
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -75,18 +84,19 @@ export default function RegisterPage() {
         formData.password,
         formData.firstName,
         formData.lastName,
-        formData.phone
+        formData.phone,
+        recaptchaToken
       );
 
       setToken(response.token);
-      localStorage.setItem('customerAuthenticated', 'true');
-      localStorage.setItem('customerData', JSON.stringify({
+      setCustomerAuth(true);
+      setCustomerData({
         id: response.username,
         email: response.email || formData.email,
         firstName: response.firstName || formData.firstName,
         lastName: response.lastName || formData.lastName,
         phone: response.phone || formData.phone,
-      }));
+      });
       navigate('/account');
     } catch (err) {
       const msg = err.message || '';
@@ -94,6 +104,11 @@ export default function RegisterPage() {
         setGeneralError(t('register.emailExists'));
       } else {
         setGeneralError(msg || t('register.error'));
+      }
+      // Reset reCAPTCHA so user can try again
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
       }
     } finally {
       setIsLoading(false);
@@ -133,8 +148,9 @@ export default function RegisterPage() {
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               className="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#cd7f32] rounded-full flex items-center justify-center mx-auto mb-4"
+              aria-hidden="true"
             >
-              <Sparkles className="w-8 h-8 text-[#0d0d0d]" />
+              <Sparkles className="w-8 h-8 text-[#0d0d0d]" aria-hidden="true" />
             </motion.div>
             <h1 className={`text-2xl font-bold ${isDark ? 'text-[#f5f5f0]' : 'text-gray-900'}`}>
               {t('register.title')}
@@ -144,144 +160,196 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate aria-label={t('register.title')}>
             {/* Name Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+                <label htmlFor="register-firstName" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                   {t('register.firstName')}
                 </label>
                 <div className="relative">
                   <input
+                    id="register-firstName"
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleChange('firstName', e.target.value)}
                     className={`${inputClass(errors.firstName)} ${isRTL ? 'pr-10' : 'pl-10'}`}
                     placeholder={t('register.firstName')}
+                    aria-required="true"
+                    aria-invalid={!!errors.firstName}
+                    aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+                    autoComplete="given-name"
                   />
-                  <User className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-3' : 'left-3'}`} />
+                  <User className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-3' : 'left-3'}`} aria-hidden="true" />
                 </div>
-                {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName}</p>}
+                {errors.firstName && <p id="firstName-error" className="text-red-400 text-xs mt-1" role="alert">{errors.firstName}</p>}
               </div>
 
               <div>
-                <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+                <label htmlFor="register-lastName" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                   {t('register.lastName')}
                 </label>
                 <div className="relative">
                   <input
+                    id="register-lastName"
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleChange('lastName', e.target.value)}
                     className={`${inputClass(errors.lastName)} ${isRTL ? 'pr-10' : 'pl-10'}`}
                     placeholder={t('register.lastName')}
+                    aria-required="true"
+                    aria-invalid={!!errors.lastName}
+                    aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+                    autoComplete="family-name"
                   />
-                  <User className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-3' : 'left-3'}`} />
+                  <User className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-3' : 'left-3'}`} aria-hidden="true" />
                 </div>
-                {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>}
+                {errors.lastName && <p id="lastName-error" className="text-red-400 text-xs mt-1" role="alert">{errors.lastName}</p>}
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+              <label htmlFor="register-email" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                 {t('register.email')}
               </label>
               <div className="relative">
                 <input
-                  type="text"
+                  id="register-email"
+                  type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
                   className={`${inputClass(errors.email)} ${isRTL ? 'pr-12' : 'pl-12'}`}
                   placeholder={t('register.email')}
                   dir="ltr"
+                  aria-required="true"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
+                  autoComplete="email"
                 />
-                <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} />
+                <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} aria-hidden="true" />
               </div>
-              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+              {errors.email && <p id="email-error" className="text-red-400 text-xs mt-1" role="alert">{errors.email}</p>}
             </div>
 
             {/* Phone */}
             <div>
-              <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+              <label htmlFor="register-phone" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                 {t('register.phone')}
               </label>
               <div className="relative">
                 <input
+                  id="register-phone"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleChange('phone', e.target.value)}
                   className={`${inputClass(errors.phone)} ${isRTL ? 'pr-12' : 'pl-12'}`}
                   placeholder="050-123-4567"
                   dir="ltr"
+                  aria-required="true"
+                  aria-invalid={!!errors.phone}
+                  aria-describedby={errors.phone ? 'phone-error' : undefined}
+                  autoComplete="tel"
                 />
-                <Phone className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} />
+                <Phone className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} aria-hidden="true" />
               </div>
-              {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+              {errors.phone && <p id="phone-error" className="text-red-400 text-xs mt-1" role="alert">{errors.phone}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+              <label htmlFor="register-password" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                 {t('register.password')}
               </label>
               <div className="relative">
                 <input
+                  id="register-password"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   className={`${inputClass(errors.password)} px-12`}
                   placeholder={t('register.password')}
                   dir="ltr"
+                  aria-required="true"
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? 'password-error' : undefined}
+                  autoComplete="new-password"
                 />
-                <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} />
+                <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className={`absolute top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-[#666] hover:text-[#a8a8a8]' : 'text-gray-400 hover:text-gray-600'} ${isRTL ? 'left-4' : 'right-4'}`}
+                  aria-label={showPassword ? t('register.hidePassword', 'Hide password') : t('register.showPassword', 'Show password')}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" aria-hidden="true" /> : <Eye className="w-5 h-5" aria-hidden="true" />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
+              {errors.password && <p id="password-error" className="text-red-400 text-xs mt-1" role="alert">{errors.password}</p>}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+              <label htmlFor="register-confirmPassword" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                 {t('register.confirmPassword')}
               </label>
               <div className="relative">
                 <input
+                  id="register-confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={(e) => handleChange('confirmPassword', e.target.value)}
                   className={`${inputClass(errors.confirmPassword)} px-12`}
                   placeholder={t('register.confirmPassword')}
                   dir="ltr"
+                  aria-required="true"
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+                  autoComplete="new-password"
                 />
-                <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} />
+                <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className={`absolute top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-[#666] hover:text-[#a8a8a8]' : 'text-gray-400 hover:text-gray-600'} ${isRTL ? 'left-4' : 'right-4'}`}
+                  aria-label={showConfirmPassword ? t('register.hidePassword', 'Hide password') : t('register.showPassword', 'Show password')}
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" aria-hidden="true" /> : <Eye className="w-5 h-5" aria-hidden="true" />}
                 </button>
               </div>
-              {errors.confirmPassword && <p className="text-red-400 text-xs mt-1">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && <p id="confirmPassword-error" className="text-red-400 text-xs mt-1" role="alert">{errors.confirmPassword}</p>}
             </div>
 
-            {generalError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-3 rounded-xl"
-              >
-                <AlertCircle className="w-5 h-5" />
-                <span>{generalError}</span>
-              </motion.div>
-            )}
+            {/* reCAPTCHA */}
+            <div className="flex flex-col items-center" role="group" aria-label={t('register.recaptchaLabel', 'Bot verification')}>
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={RECAPTCHA_SITE_KEY}
+                onChange={(token) => {
+                  setRecaptchaToken(token);
+                  if (errors.recaptcha) {
+                    setErrors(prev => ({ ...prev, recaptcha: '' }));
+                  }
+                }}
+                onExpired={() => setRecaptchaToken(null)}
+                theme={isDark ? 'dark' : 'light'}
+              />
+              {errors.recaptcha && <p id="recaptcha-error" className="text-red-400 text-xs mt-1" role="alert">{errors.recaptcha}</p>}
+            </div>
+
+            <div aria-live="assertive" aria-atomic="true">
+              {generalError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-3 rounded-xl"
+                  role="alert"
+                >
+                  <AlertCircle className="w-5 h-5" aria-hidden="true" />
+                  <span>{generalError}</span>
+                </motion.div>
+              )}
+            </div>
 
             <motion.button
               type="submit"
@@ -289,6 +357,7 @@ export default function RegisterPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full bg-gradient-to-r from-[#d4af37] to-[#cd7f32] text-[#0d0d0d] font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 mt-6"
+              aria-busy={isLoading}
             >
               {isLoading ? t('register.registering') : t('register.register')}
             </motion.button>

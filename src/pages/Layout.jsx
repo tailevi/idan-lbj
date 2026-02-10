@@ -5,20 +5,17 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
 import ClickRipple from '@/components/effects/ClickRipple';
+import { getCartItems, setCartItems as setCartCookie } from '@/utils/cookies';
+import CookieConsent from '@/components/layout/CookieConsent';
 
 export default function Layout({ children }) {
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const saved = localStorage.getItem('cartItems');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  const [cartItems, setCartItems] = useState(() => getCartItems());
   const [isCartOpen, setIsCartOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Persist cart to localStorage
+  // Persist cart to cookie
   useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    setCartCookie(cartItems);
   }, [cartItems]);
 
   // Listen for add to cart events
@@ -148,6 +145,8 @@ export default function Layout({ children }) {
           navigate('/Checkout');
         }}
       />
+
+      <CookieConsent />
     </div>
   );
 }

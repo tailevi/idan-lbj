@@ -10,10 +10,11 @@ import ReviewsPage from './pages/ReviewsPage';
 import UsersPage from './pages/UsersPage';
 import OrdersPage from './pages/OrdersPage';
 import { getToken } from '../services/api';
+import { getAdminAuth } from '../utils/cookies';
 import './i18n/config';
 
 function ProtectedRoute({ children }) {
-  const isAuthenticated = localStorage.getItem('adminAuthenticated');
+  const isAuthenticated = getAdminAuth();
   const hasToken = getToken();
   if (!isAuthenticated && !hasToken) {
     return <Navigate to="/login" replace />;

@@ -8,6 +8,7 @@ import { useTheme } from '../contexts';
 import LanguageToggle from '../components/common/LanguageToggle';
 import ThemeToggle from '../components/common/ThemeToggle';
 import { authApi, setToken } from '../../services/api';
+import { setAdminAuth, setCustomerAuth, setCustomerData } from '../../utils/cookies';
 import '../i18n/config';
 
 export default function LoginPage() {
@@ -32,21 +33,21 @@ export default function LoginPage() {
 
       if (response.role === 'ADMIN') {
         setToken(response.token);
-        localStorage.setItem('adminAuthenticated', 'true');
+        setAdminAuth(true);
         navigate('/admin');
         return;
       }
 
-      // Non-admin user - store token and profile data
+      // Non-admin user - store token and profile data in cookies
       setToken(response.token);
-      localStorage.setItem('customerAuthenticated', 'true');
-      localStorage.setItem('customerData', JSON.stringify({
+      setCustomerAuth(true);
+      setCustomerData({
         id: response.username,
         email: response.email || email,
         firstName: response.firstName || '',
         lastName: response.lastName || '',
         phone: response.phone || '',
-      }));
+      });
       navigate('/account');
     } catch (err) {
       setError(t('login.invalidCredentials'));
@@ -75,8 +76,9 @@ export default function LoginPage() {
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               className="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#cd7f32] rounded-full flex items-center justify-center mx-auto mb-4"
+              aria-hidden="true"
             >
-              <Sparkles className="w-8 h-8 text-[#0d0d0d]" />
+              <Sparkles className="w-8 h-8 text-[#0d0d0d]" aria-hidden="true" />
             </motion.div>
             <h1 className={`text-2xl font-bold ${isDark ? 'text-[#f5f5f0]' : 'text-gray-900'}`}>
               {t('login.title')}
@@ -86,14 +88,15 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6" noValidate aria-label={t('login.title')}>
             <div>
-              <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+              <label htmlFor="login-email" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                 {t('login.email')}
               </label>
               <div className="relative">
                 <input
-                  type="text"
+                  id="login-email"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:border-[#d4af37] transition-colors ${
@@ -103,17 +106,20 @@ export default function LoginPage() {
                   } ${isRTL ? 'pr-12' : 'pl-12'}`}
                   placeholder={t('login.email')}
                   dir="ltr"
+                  aria-required="true"
+                  autoComplete="email"
                 />
-                <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} />
+                <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} aria-hidden="true" />
               </div>
             </div>
 
             <div>
-              <label className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
+              <label htmlFor="login-password" className={`block text-sm mb-2 ${isDark ? 'text-[#f5f5f0]' : 'text-gray-700'}`}>
                 {t('login.password')}
               </label>
               <div className="relative">
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -124,28 +130,34 @@ export default function LoginPage() {
                   }`}
                   placeholder={t('login.password')}
                   dir="ltr"
+                  aria-required="true"
+                  autoComplete="current-password"
                 />
-                <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} />
+                <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#666]' : 'text-gray-400'} ${isRTL ? 'right-4' : 'left-4'}`} aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className={`absolute top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-[#666] hover:text-[#a8a8a8]' : 'text-gray-400 hover:text-gray-600'} ${isRTL ? 'left-4' : 'right-4'}`}
+                  aria-label={showPassword ? t('login.hidePassword', 'Hide password') : t('login.showPassword', 'Show password')}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" aria-hidden="true" /> : <Eye className="w-5 h-5" aria-hidden="true" />}
                 </button>
               </div>
             </div>
 
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-3 rounded-xl"
-              >
-                <AlertCircle className="w-5 h-5" />
-                <span>{error}</span>
-              </motion.div>
-            )}
+            <div aria-live="assertive" aria-atomic="true">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-3 rounded-xl"
+                  role="alert"
+                >
+                  <AlertCircle className="w-5 h-5" aria-hidden="true" />
+                  <span>{error}</span>
+                </motion.div>
+              )}
+            </div>
 
             <motion.button
               type="submit"
@@ -153,6 +165,7 @@ export default function LoginPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full bg-gradient-to-r from-[#d4af37] to-[#cd7f32] text-[#0d0d0d] font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+              aria-busy={isLoading}
             >
               {isLoading ? t('login.loggingIn') : t('login.login')}
             </motion.button>

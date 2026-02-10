@@ -1,5 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi, setToken, clearToken } from '../../services/api';
+import {
+  getCustomerData as getCookie,
+  setCustomerData as setCookie,
+  clearCustomerData,
+  setCustomerAuth,
+  clearCustomerAuth
+} from '../../utils/cookies';
 
 const AuthContext = createContext();
 
@@ -8,10 +15,10 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const savedCustomer = localStorage.getItem('customerData');
+    // Check for existing session from cookie
+    const savedCustomer = getCookie();
     if (savedCustomer) {
-      setCustomer(JSON.parse(savedCustomer));
+      setCustomer(savedCustomer);
     }
     setIsLoading(false);
   }, []);
@@ -20,7 +27,7 @@ export function AuthProvider({ children }) {
     try {
       const response = await authApi.login(email, password);
       setToken(response.token);
-      localStorage.setItem('customerAuthenticated', 'true');
+      setCustomerAuth(true);
 
       const customerData = {
         id: response.username,
@@ -30,7 +37,7 @@ export function AuthProvider({ children }) {
         phone: response.phone || '',
       };
       setCustomer(customerData);
-      localStorage.setItem('customerData', JSON.stringify(customerData));
+      setCookie(customerData);
       return { success: true, customer: customerData, role: response.role };
     } catch (err) {
       return { success: false, error: err.message || 'Invalid credentials' };
@@ -45,10 +52,11 @@ export function AuthProvider({ children }) {
         userData.password,
         userData.firstName,
         userData.lastName,
-        userData.phone
+        userData.phone,
+        userData.recaptchaToken
       );
       setToken(response.token);
-      localStorage.setItem('customerAuthenticated', 'true');
+      setCustomerAuth(true);
 
       const customerData = {
         id: response.username,
@@ -58,7 +66,7 @@ export function AuthProvider({ children }) {
         phone: response.phone || userData.phone,
       };
       setCustomer(customerData);
-      localStorage.setItem('customerData', JSON.stringify(customerData));
+      setCookie(customerData);
       return { success: true, customer: customerData };
     } catch (err) {
       return { success: false, error: err.message || 'Registration failed' };
@@ -68,15 +76,15 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setCustomer(null);
     clearToken();
-    localStorage.removeItem('customerData');
-    localStorage.removeItem('customerAuthenticated');
+    clearCustomerData();
+    clearCustomerAuth();
   };
 
   const updateProfile = (updates) => {
     if (!customer) return { success: false, error: 'Not logged in' };
     const updatedCustomer = { ...customer, ...updates };
     setCustomer(updatedCustomer);
-    localStorage.setItem('customerData', JSON.stringify(updatedCustomer));
+    setCookie(updatedCustomer);
     return { success: true };
   };
 
@@ -98,7 +106,7 @@ export function AuthProvider({ children }) {
     };
     const updatedCustomer = { ...customer, creditCards: [...cards, newCard] };
     setCustomer(updatedCustomer);
-    localStorage.setItem('customerData', JSON.stringify(updatedCustomer));
+    setCookie(updatedCustomer);
     return { success: true, card: newCard };
   };
 
@@ -110,7 +118,7 @@ export function AuthProvider({ children }) {
     }
     const updatedCustomer = { ...customer, creditCards: cards };
     setCustomer(updatedCustomer);
-    localStorage.setItem('customerData', JSON.stringify(updatedCustomer));
+    setCookie(updatedCustomer);
     return { success: true };
   };
 
@@ -122,7 +130,7 @@ export function AuthProvider({ children }) {
     }));
     const updatedCustomer = { ...customer, creditCards: cards };
     setCustomer(updatedCustomer);
-    localStorage.setItem('customerData', JSON.stringify(updatedCustomer));
+    setCookie(updatedCustomer);
     return { success: true };
   };
 

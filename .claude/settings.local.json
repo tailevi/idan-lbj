@@ -15,7 +15,8 @@
       "Bash(node -e:*)",
       "Bash(set TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJJZGFuQWRtaW5MQkoiLCJpYXQiOjE3NzA0NTYxNTEsImV4cCI6MTc3MDU0MjU1MX0.benEB3nc0xUOTxqkgDiWRwS-DwLh6av0JhTrkNKWsE4)",
       "Bash(del \"\\\\?\\\\C:\\\\Users\\\\tai\\\\Desktop\\\\ourwebsite\\\\backend-front\\\\idan-lbj\\\\nul\")",
-      "Bash(cmd.exe /c \"del \\\\?\\\\C:\\\\Users\\\\tai\\\\Desktop\\\\ourwebsite\\\\backend-front\\\\idan-lbj\\\\nul\")"
+      "Bash(cmd.exe /c \"del \\\\?\\\\C:\\\\Users\\\\tai\\\\Desktop\\\\ourwebsite\\\\backend-front\\\\idan-lbj\\\\nul\")",
+      "Bash(npx vite build)"
     ]
   }
 }

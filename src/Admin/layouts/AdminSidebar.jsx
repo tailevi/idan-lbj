@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts';
 import { useDirection } from '../hooks';
+import { clearAdminAuth, clearAuthToken } from '../../utils/cookies';
 import {
   Sidebar,
   SidebarContent,
@@ -44,8 +45,8 @@ export default function AdminSidebar() {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuthenticated');
-    localStorage.removeItem('adminToken');
+    clearAdminAuth();
+    clearAuthToken();
     navigate('/login');
   };
 

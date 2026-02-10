@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
+import { getAdminAuth } from '../../utils/cookies';
 import AdminHeader from '../layouts/AdminHeader';
 import SearchInput from '../components/common/SearchInput';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -24,7 +25,7 @@ export default function ProductsPage() {
   const [deleteProduct, setDeleteProduct] = useState(null);
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuthenticated');
+    const isAuthenticated = getAdminAuth();
     if (!isAuthenticated) {
       navigate('/admin-login');
       return;

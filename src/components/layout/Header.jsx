@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Settings, User, LogOut, LogIn } from 'lucide-react';
 import { createPageUrl } from '@/utils';
+import { getCustomerData, clearCustomerData, clearCustomerAuth, clearAuthToken } from '@/utils/cookies';
 import AnimatedLogo from '../effects/AnimatedLogo';
 
 export default function Header({ cartCount = 0, onCartClick }) {
@@ -24,9 +25,8 @@ export default function Header({ cartCount = 0, onCartClick }) {
   // Check login status
   useEffect(() => {
     const checkAuth = () => {
-      const customerData = localStorage.getItem('customerData');
-      if (customerData) {
-        const customer = JSON.parse(customerData);
+      const customer = getCustomerData();
+      if (customer) {
         setIsLoggedIn(true);
         setCustomerName(customer.firstName || 'User');
       } else {
@@ -42,9 +42,9 @@ export default function Header({ cartCount = 0, onCartClick }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('customerData');
-    localStorage.removeItem('customerAuthenticated');
-    localStorage.removeItem('adminToken');
+    clearCustomerData();
+    clearCustomerAuth();
+    clearAuthToken();
     setIsLoggedIn(false);
     setCustomerName('');
     setShowUserMenu(false);
@@ -177,29 +177,20 @@ export default function Header({ cartCount = 0, onCartClick }) {
                     )}
                   </AnimatePresence>
                 </div>
-              ) : (
-                <Link to="/login">
+              ) : null}
+
+              {/* User Panel (only show when logged in) */}
+              {isLoggedIn && (
+                <Link to="/account">
                   <motion.div
-                    className="flex items-center gap-2 px-3 py-2 text-[#f5f5f0] hover:text-[#d4af37] transition-colors rounded-lg hover:bg-[#1a1a1a]/50"
-                    whileHover={{ scale: 1.05 }}
+                    className="p-2 text-[#666] hover:text-[#d4af37] transition-colors"
+                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <LogIn className="w-4 h-4" />
-                    <span className="hidden md:block text-sm">התחבר</span>
+                    <Settings className="w-4 h-4" />
                   </motion.div>
                 </Link>
               )}
-
-              {/* User Panel / Login Link */}
-              <Link to={isLoggedIn ? "/account" : "/login"}>
-                <motion.div
-                  className="p-2 text-[#666] hover:text-[#d4af37] transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Settings className="w-4 h-4" />
-                </motion.div>
-              </Link>
 
               <motion.button
                 onClick={onCartClick}
@@ -310,16 +301,7 @@ export default function Header({ cartCount = 0, onCartClick }) {
                         <span>התנתק</span>
                       </button>
                     </div>
-                  ) : (
-                    <Link
-                      to="/login"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 text-xl text-[#d4af37] hover:text-[#f5f5f0] transition-colors"
-                    >
-                      <LogIn className="w-5 h-5" />
-                      <span>התחבר / הירשם</span>
-                    </Link>
-                  )}
+                  ) : null}
                 </motion.div>
               </div>
             </motion.div>

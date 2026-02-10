@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { DollarSign, ShoppingCart, Users, TrendingUp } from 'lucide-react';
+import { getAdminAuth } from '../../utils/cookies';
 import AdminHeader from '../layouts/AdminHeader';
 import StatCard from '../components/dashboard/StatCard';
 import RevenueChart from '../components/dashboard/RevenueChart';
@@ -17,7 +18,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuthenticated');
+    const isAuthenticated = getAdminAuth();
     if (!isAuthenticated) {
       navigate('/admin-login');
     }

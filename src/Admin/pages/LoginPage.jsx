@@ -6,6 +6,7 @@ import { Lock, User, Eye, EyeOff, AlertCircle, Sparkles } from 'lucide-react';
 import { useDirection } from '../hooks';
 import LanguageToggle from '../components/common/LanguageToggle';
 import { authApi, setToken } from '../../services/api';
+import { setAdminAuth } from '../../utils/cookies';
 import '../i18n/config';
 
 export default function LoginPage() {
@@ -28,7 +29,7 @@ export default function LoginPage() {
 
       if (response.role === 'ADMIN') {
         setToken(response.token);
-        localStorage.setItem('adminAuthenticated', 'true');
+        setAdminAuth(true);
         navigate('/admin');
       } else {
         setError(t('login.invalidCredentials'));

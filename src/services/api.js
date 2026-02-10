@@ -1,17 +1,19 @@
+import { getAuthToken, setAuthToken, clearAuthToken, clearAdminAuth } from '../utils/cookies';
+
 const API_BASE_URL = 'http://localhost:8080';
 
 // Token management
 export function getToken() {
-  return localStorage.getItem('adminToken');
+  return getAuthToken();
 }
 
 export function setToken(token) {
-  localStorage.setItem('adminToken', token);
+  setAuthToken(token);
 }
 
 export function clearToken() {
-  localStorage.removeItem('adminToken');
-  localStorage.removeItem('adminAuthenticated');
+  clearAuthToken();
+  clearAdminAuth();
 }
 
 // Generic API request wrapper
@@ -53,10 +55,10 @@ export const authApi = {
       body: JSON.stringify({ username, password }),
     }),
 
-  register: (username, email, password, firstName, lastName, phone) =>
+  register: (username, email, password, firstName, lastName, phone, recaptchaToken) =>
     apiRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, email, password, firstName, lastName, phone }),
+      body: JSON.stringify({ username, email, password, firstName, lastName, phone, recaptchaToken }),
     }),
 
   logout: () =>
